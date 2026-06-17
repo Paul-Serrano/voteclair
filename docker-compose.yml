@@ -1,0 +1,64 @@
+services:
+
+  laravel:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: voteclair-laravel
+    working_dir: /var/www/html
+    volumes:
+      - ./api:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    networks:
+      - voteclair
+    command: >
+      sh -c "
+      if [ ! -f artisan ]; then
+        composer create-project laravel/laravel .;
+      fi &&
+      php artisan serve --host=0.0.0.0 --port=8000
+      "
+
+  postgres:
+    image: postgres:17
+    container_name: voteclair-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: voteclair
+      POSTGRES_USER: voteclair
+      POSTGRES_PASSWORD: voteclair
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - voteclair
+
+  adminer:
+    image: adminer:latest
+    container_name: voteclair-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - voteclair
+
+  redis:
+    image: redis:8-alpine
+    container_name: voteclair-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - voteclair
+
+volumes:
+  postgres_data:
+
+networks:
+  voteclair:
+    driver: bridge
