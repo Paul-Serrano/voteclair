@@ -1,0 +1,159 @@
+[
+    {
+        "scrutinId": "cb65a52d-5cb7-49d3-bcd3-0f68f1d2a7a0",
+        "scrutinNb": 7407,
+        "ventilationVotes": {
+            "organe": {
+                "groupes": {
+                    "groupe": [
+                        {
+                            "organeRef": "PO845401",
+                            "nombreMembresGroupe": "122",
+                            "vote": {
+                                "decompteVoix": {
+                                "pour": "79",
+                                "contre": "0",
+                                "nonVotants": "0",
+                                "abstentions": "0",
+                                "nonVotantsVolontaires": "0"
+                                },
+                                "decompteNominatif": {
+                                    "pour": {
+                                        "votant": [
+                                            {
+                                                "numPlace": "010",
+                                                "acteurRef": "PA841495",
+                                                "mandatRef": "PM843065",
+                                                "parDelegation": "false"
+                                            },
+                                            {
+                                                "numPlace": "025",
+                                                "acteurRef": "PA842279",
+                                                "mandatRef": "PM843779",
+                                                "parDelegation": "false"
+                                            }
+                                        ]
+                                    },
+                                    "contres": null,
+                                    "nonVotants": null,
+                                    "abstentions": null
+                                },
+                                "positionMajoritaire": "pour"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "votesByPosition": {
+            "pour": [
+                {
+                    "parlementaire": {
+                        "slug": "maxime-amblard"
+                    }
+                },
+                {
+                    "parlementaire": {
+                        "slug": "anchya-bamana"
+                    }
+                },
+                {
+                    "parlementaire": {
+                        "slug": "jose-beaurain"
+                    }
+                }
+                
+            ],
+            "contre": [
+                {
+                    "parlementaire": {
+                        "slug": "gabriel-attal"
+                    }
+                },
+                {
+                    "parlementaire": {
+                        "slug": "olivier-becht"
+                    }
+                }
+            ],
+            "abstention": [
+                {
+                    "parlementaire": {
+                        "slug": "thibault-bazin"
+                    }
+                }
+            ],
+            "absent": [
+
+            ]
+        },
+        "votesByGroupe": {
+            "DEM": {
+                "pour": 0,
+                "contre": 14,
+                "abstention": 0,
+                "absent": 0
+            },
+            "DR": {
+                "pour": 0,
+                "contre": 6,
+                "abstention": 10,
+                "absent": 0
+            },
+            "ECOS": {
+                "pour": 0,
+                "contre": 25,
+                "abstention": 0,
+                "absent": 0
+            },
+            "EPR": {
+                "pour": 0,
+                "contre": 44,
+                "abstention": 0,
+                "absent": 0
+            },
+            "HOR": {
+                "pour": 0,
+                "contre": 17,
+                "abstention": 0,
+                "absent": 0
+            },
+            "LFI-NFP": {
+                "pour": 0,
+                "contre": 34,
+                "abstention": 0,
+                "absent": 0
+            },
+            "LIOT": {
+                "pour": 0,
+                "contre": 6,
+                "abstention": 0,
+                "absent": 0
+            },
+            "NI": {
+                "pour": 0,
+                "contre": 1,
+                "abstention": 1,
+                "absent": 0
+            },
+            "RN": {
+                "pour": 79,
+                "contre": 0,
+                "abstention": 0,
+                "absent": 0
+            },
+            "SOC": {
+                "pour": 0,
+                "contre": 33,
+                "abstention": 0,
+                "absent": 0
+            },
+            "UDDPLR": {
+                "pour": 6,
+                "contre": 0,
+                "abstention": 0,
+                "absent": 0
+            }
+        }
+    }
+]

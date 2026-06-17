@@ -1,0 +1,110 @@
+[
+    {
+        "id": "f398ff2d-9909-4485-9a76-2b92b1e79bbd",
+        "sourceId": "793214",
+        "slug": "audrey-abadie-amiel",
+        "nom": "Abadie-Amiel",
+        "prenom": "Audrey",
+        "profession": "Enseignante",
+        "photoUrl": "https://www2.assemblee-nationale.fr/static/tribun/17/photos/793214.jpg",
+        "twitter": null,
+        "email": "audrey.abadie@assemblee-nationale.fr",
+        "actif": true,
+        "groupeId": "dbe61fd5-c577-44f3-ad77-cff06cde4266",
+        "circonscriptionId": "878d440d-c6dd-4952-8bd3-2137b745934b",
+        "statsPresence": 7,
+        "statsPresenceSolennel": 39,
+        "statsLoyaute": 87,
+        "statsParticipation": 525,
+        "statsInterventions": 12,
+        "statsAmendements": 152,
+        "statsAmendementsAdoptes": 57,
+        "statsQuestions": 3,
+        "resumeIA": "Audrey Abadie-Amiel est une députée française du groupe LIOT, élue en novembre 2025 dans la deuxième circonscription de l'Ariège. Ancienne enseignante, elle a succédé à Laurent Panifous, nommé ministre. Elle se distingue par une activité parlementaire intense malgré une courte durée de mandat, avec un taux de présence aux scrutins relativement faible mais une loyauté élevée à son groupe politique.",
+        "parcoursIA": "Audrey Abadie-Amiel, née en 1974 à Toulouse, est une enseignante de formation. Elle entre en politique en tant que suppléante de Laurent Panifous, devenant députée en novembre 2025 après sa nomination au gouvernement. Elle siège au sein du groupe LIOT, classé au centre de l'échiquier politique. Actuellement, elle est membre de l'Assemblée parlementaire internationale (API) et de la Commission permanente (COMPER). Son mandat parlementaire est marqué par une activité législative soutenue, avec 123 amendements déposés, dont 45 adoptés.",
+        "positionsClesIA": "Audrey Abadie-Amiel se distingue par une forte implication dans le travail législatif, avec un taux de votes exprimés supérieur à la moyenne de son groupe. Elle a participé à plusieurs lois et questions parlementaires, bien que son mandat soit encore récent. Ses interventions et amendements montrent une attention particulière aux questions locales et nationales, en ligne avec les valeurs du groupe LIOT. Elle vote systématiquement en accord avec les positions de son groupe, reflétant une cohérence politique notable.",
+        "faitsNotablesIA": "Audrey Abadie-Amiel a une présence parlementaire moins longue que la moyenne des députés, mais compense par une activité législative intense. Elle a déposé 123 amendements en quelques mois, un nombre remarquable pour un mandat aussi court. Son élection en 2025 dans l'Ariège a été marquée par une dynamique locale, avec des enjeux municipaux en perspective pour 2026. Aucune controverse majeure n'est à signaler à ce jour concernant son mandat.",
+        "groupe": {
+            "slug": "liot",
+            "chambre": "assemblee"
+        },
+        "circonscription": {
+            "id": "878d440d-c6dd-4952-8bd3-2137b745934b",
+            "departement": "09",
+            "numero": 2,
+            "nom": "09 - Circonscription 2"
+        }
+    },
+    {
+        "id": "6b0c91a8-2130-4719-9c0a-6c2a73a89896",
+        "sourceId": "795228",
+        "slug": "nadege-abomangoli",
+        "nom": "Abomangoli",
+        "prenom": "Nadège",
+        "profession": "Contrôleure interne et risk manager",
+        "photoUrl": "https://www2.assemblee-nationale.fr/static/tribun/17/photos/795228.jpg",
+        "twitter": "abomangoli",
+        "email": "nadege.abomangoli@assemblee-nationale.fr",
+        "actif": true,
+        "groupeId": "5e09348f-b51d-4192-830e-c78bcd8c4d54",
+        "circonscriptionId": "b6c0c29c-7826-4ce4-a7a8-fc0d45121ae6",
+        "statsPresence": 38,
+        "statsPresenceSolennel": 98,
+        "statsLoyaute": 99,
+        "statsParticipation": 2806,
+        "statsInterventions": 82,
+        "statsAmendements": 130,
+        "statsAmendementsAdoptes": 29,
+        "statsQuestions": 10,
+        "resumeIA": "Nadège Abomangoli est une députée française de La France insoumise, élue dans la 10e circonscription de Seine-Saint-Denis. Vice-présidente de l'Assemblée nationale depuis 2024, elle s'est distinguée en devenant la première femme noire à présider une séance à l'Assemblée. Active dans les commissions et délégations parlementaires, elle se montre particulièrement engagée sur les questions nucléaires et les affaires internationales. Son parcours politique, marqué par des mandats locaux avant son élection à l'Assemblée, reflète un engagement progressiste et social.",
+        "parcoursIA": "Née le 15 septembre 1975 à Brazzaville, Nadège Abomangoli est une femme politique française d'origine congolaise. Avant son élection comme députée en 2022, elle a occupé plusieurs mandats locaux, notamment en tant que conseillère régionale, départementale et municipale. Professionnellement, elle a exercé comme contrôleure interne et risk manager. À l'Assemblée nationale, elle siège au sein du groupe La France insoumise - NFP (LFI-NFP) et occupe des responsabilités importantes, comme vice-présidente de l'Assemblée nationale et membre de plusieurs commissions et délégations. Elle a également été membre de la commission d'enquête sur la politique française d'expérimentation nucléaire en Polynésie française.",
+        "positionsClesIA": "Nadège Abomangoli est particulièrement active sur les questions liées aux affaires internationales et à la politique nucléaire. Elle a déposé de nombreux amendements et participé à des rapports d'information sur ces sujets. Son engagement en faveur des droits sociaux et des politiques progressistes est visible à travers ses interventions et ses votes, qui montrent une loyauté forte envers son groupe politique. Elle a également marqué l'histoire parlementaire en devenant la première femme noire à présider une séance à l'Assemblée nationale, un fait notable dans son parcours politique.",
+        "faitsNotablesIA": "Nadège Abomangoli a marqué l'histoire parlementaire en devenant la première femme noire à présider une séance à l'Assemblée nationale le 21 octobre 2024. Elle est également connue pour son engagement dans la commission d'enquête sur les conséquences de l'expérimentation nucléaire en Polynésie française. Son activité parlementaire est marquée par une forte loyauté à son groupe politique et une participation active aux travaux de l'Assemblée, malgré une présence aux scrutins légèrement inférieure à la moyenne.",
+        "groupe": {
+            "slug": "lfi-nfp",
+            "chambre": "assemblee"
+        },
+        "circonscription": {
+            "id": "b6c0c29c-7826-4ce4-a7a8-fc0d45121ae6",
+            "departement": "93",
+            "numero": 10,
+            "nom": "93 - Circonscription 10"
+        }
+    },
+    {
+        "id": "4f13c6f0-0efc-4609-89b0-e3709aec962c",
+        "sourceId": "794278",
+        "slug": "xavier-albertini",
+        "nom": "Albertini",
+        "prenom": "Xavier",
+        "profession": "Profession libérale",
+        "photoUrl": "https://www2.assemblee-nationale.fr/static/tribun/17/photos/794278.jpg",
+        "twitter": null,
+        "email": "xavier.albertini@assemblee-nationale.fr",
+        "actif": true,
+        "groupeId": "9a52b0c3-0077-43b2-91ac-be6fc9a88ad5",
+        "circonscriptionId": "3b8f4e1d-3949-4293-a2da-2c05e35161de",
+        "statsPresence": 6,
+        "statsPresenceSolennel": 100,
+        "statsLoyaute": 94,
+        "statsParticipation": 408,
+        "statsInterventions": 43,
+        "statsAmendements": 24,
+        "statsAmendementsAdoptes": 8,
+        "statsQuestions": 12,
+        "resumeIA": "Xavier Albertini est un député français de la 1re circonscription de la Marne, membre du groupe Horizons à l'Assemblée nationale. Avocat de profession, il est connu pour son engagement politique récent mais actif. Son activité parlementaire, bien que marquée par une faible présence aux scrutins, montre une forte loyauté à son groupe politique. Il se distingue par ses interventions et ses amendements, dont certains ont été adoptés.",
+        "parcoursIA": "Xavier Albertini, né le 28 janvier 1970 à Royan, est un avocat et homme politique français. Il est entré en fonction en tant que député de la 1re circonscription de la Marne en juillet 2024. Actuellement, il est membre de plusieurs commissions permanentes et spéciales, ainsi que d'un organisme extra-parlementaire. Sa carrière politique semble récente, mais il s'est rapidement impliqué dans les débats parlementaires. Avant sa carrière politique, il exerçait comme avocat, une profession qu'il a probablement mise à profit dans ses fonctions parlementaires.",
+        "positionsClesIA": "Xavier Albertini s'est fait remarquer par ses prises de position sur des sujets politiques sensibles. Il a notamment exprimé son soutien à l'idée d'une démission collective du gouvernement, une proposition formulée par Edouard Philippe. Il a également affirmé que toute motion de censure à l'Assemblée nationale serait rejetée. Ses interventions et amendements montrent un engagement actif sur des questions variées, bien que ses votes soient peu nombreux en raison de sa faible présence aux scrutins.",
+        "faitsNotablesIA": "Xavier Albertini a une présence parlementaire relativement faible, avec seulement 6% de participation aux scrutins. Cependant, il est très loyal à son groupe politique, avec un taux de loyauté de 96%. Il a déposé 10 amendements, dont 5 ont été adoptés, ce qui montre une certaine influence dans les débats parlementaires. Ses déclarations à la HATVP montrent une transparence dans ses activités et son patrimoine, conformément aux exigences de l'institution.",
+        "groupe": {
+            "slug": "hor",
+            "chambre": "assemblee"
+        },
+        "circonscription": {
+            "id": "3b8f4e1d-3949-4293-a2da-2c05e35161de",
+            "departement": "51",
+            "numero": 1,
+            "nom": "51 - Circonscription 1"
+        }
+    }
+]
