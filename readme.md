@@ -4,238 +4,113 @@
 
 ## Présentation
 
-VoteClair est une application mobile permettant à chaque citoyen de consulter et comprendre les votes des députés à l'Assemblée nationale française.
+VoteClair est un projet orienté transparence démocratique, avec une API Laravel et une application mobile (à venir), pour rendre les votes parlementaires lisibles par tous.
 
-Aujourd'hui, les données parlementaires sont publiques mais restent difficiles d'accès et souvent complexes à interpréter. VoteClair a pour objectif de rendre ces informations accessibles au plus grand nombre grâce à une interface simple, claire et pédagogique.
+Le MVP cible l'Assemblée nationale. Le modèle de données a été conçu pour pouvoir intégrer ensuite le Sénat et le Parlement européen.
 
-Le projet se concentre dans un premier temps sur les votes des députés français à l'Assemblée nationale.
-
----
-
-## Objectifs
-
-- Rendre les votes des députés accessibles à tous.
-- Simplifier la compréhension des scrutins parlementaires.
-- Favoriser la transparence démocratique.
-- Permettre aux citoyens de suivre l'activité de leurs représentants.
-
----
-
-## Fonctionnalités du MVP
-
-### Mon député
-
-À partir du code postal de l'utilisateur :
-
-- Identification du député de la circonscription.
-- Présentation de sa fiche détaillée.
-- Consultation de ses derniers votes.
-- Taux de participation aux scrutins.
-
-### Fiche député
-
-Pour chaque député :
-
-- Informations générales.
-- Groupe parlementaire.
-- Circonscription.
-- Historique des votes.
-- Statistiques de participation.
-- Répartition des votes :
-  - Pour
-  - Contre
-  - Abstention
-  - Non-votant
-
-### Fiche scrutin
-
-Pour chaque vote :
-
-- Titre du scrutin.
-- Résumé simplifié du sujet voté.
-- Date du vote.
-- Résultat global.
-- Répartition des votes.
-- Liste des députés ayant participé.
-
-### Recherche
-
-- Recherche d'un député par nom.
-- Recherche par circonscription.
-
-### Sujets d'intérêt (version ultérieure)
-
-L'utilisateur pourra sélectionner des thèmes :
-
-- Écologie
-- Santé
-- Éducation
-- Immigration
-- Économie
-- Pouvoir d'achat
-
-L'application mettra alors en avant les votes liés à ces sujets.
-
----
-
-## Principes du projet
-
-VoteClair se veut :
-
-- Neutre politiquement.
-- Factuel.
-- Transparent.
-- Accessible.
-
-L'application ne porte aucun jugement sur les votes des élus et se contente de présenter les données parlementaires de manière compréhensible.
-
----
-
-## Architecture technique
-
-### Backend
-
-API REST développée avec Laravel.
-
-#### Stack
-
-- PHP 8+
-- Laravel
-- PostgreSQL
-- Redis
-- Docker
-
-#### Responsabilités
-
-- Synchronisation des données parlementaires.
-- Exposition des données via API REST.
-- Agrégation et enrichissement des données.
-- Génération des statistiques.
-
-#### Synchronisation des données
-
-Les données de l'Assemblée nationale sont importées automatiquement grâce à :
-
-- Laravel Jobs
-- Laravel Queues
-- Tâches planifiées
-
-Cette architecture permet de :
-
-- Importer de gros volumes de données.
-- Mettre à jour régulièrement les votes.
-- Garantir de bonnes performances.
-
-#### Cache
-
-Redis est utilisé pour :
-
-- Mettre en cache les requêtes fréquentes.
-- Réduire la charge sur PostgreSQL.
-- Améliorer les temps de réponse.
-
----
-
-### Mobile
-
-Application développée avec Flutter.
-
-#### Objectifs
-
-- Application Android.
-- Application iOS.
-- Expérience utilisateur simple et rapide.
-- Consommation exclusive de l'API REST Laravel.
-
----
-
-## Architecture prévisionnelle
+## Architecture actuelle du repository
 
 ```text
 voteclair/
-├── api/
+├── api/                    # Backend Laravel
 │   ├── app/
+│   ├── config/
 │   ├── database/
+│   │   ├── migrations/
+│   │   ├── factories/
+│   │   └── seeders/
 │   ├── routes/
-│   └── docker/
-│
-├── mobile/
-│   ├── lib/
-│   ├── assets/
-│   └── test/
-│
-└── docs/
+│   ├── resources/
+│   └── tests/
+├── docker/
+│   └── php/
+│       └── Dockerfile
+├── docs/
+│   ├── clair-api/          # Exemples et flux métier
+│   └── copilot/            # Documentation technique (schéma DB)
+├── mobile/                 # Placeholder (pas encore initialisé)
+├── docker-compose.yml      # Stack locale Laravel + PostgreSQL + Redis + Adminer
+└── readme.md
 ```
 
-## Modèle de données (prévisionnel)
+## Stack technique
 
-```text
-deputies
-groups
-constituencies
-scrutins
-votes
-themes
+- Backend: Laravel (PHP)
+- Base de données: PostgreSQL
+- Cache/queue: Redis
+- Conteneurisation locale: Docker Compose
+- Admin base de données: Adminer
+
+## Services Docker disponibles
+
+Le fichier [docker-compose.yml](docker-compose.yml) définit 4 services:
+
+- `laravel`: API Laravel servie sur `http://localhost:8000`
+- `postgres`: base PostgreSQL
+- `redis`: cache et file d'attente
+- `adminer`: interface DB sur `http://localhost:8080`
+
+## Données et schéma
+
+Le schéma de référence est documenté dans [docs/copilot/database-schema.md](docs/copilot/database-schema.md).
+
+Les migrations VoteClair ont été ajoutées dans [api/database/migrations](api/database/migrations) avec:
+
+- Types PostgreSQL: `vote_position`, `political_position`, `scrutin_result`
+- Tables métier: `institutions`, `groups`, `circonscriptions`, `deputies`, `scrutins`, `votes`
+
+## Démarrage rapide
+
+### 1. Lancer la stack
+
+```bash
+docker compose up -d --build
 ```
 
-### Exemple
+### 2. Préparer l'environnement Laravel
 
-Un scrutin :
-
-```json
-{
-  "id": 1234,
-  "title": "Projet de loi relatif à l'énergie",
-  "date": "2026-06-17",
-  "result": "adopté"
-}
+```bash
+cd api
+cp .env.example .env
+php artisan key:generate
 ```
 
-Un vote individuel :
+### 3. Configurer la base dans `.env`
 
-```json
-{
-  "deputy": "Jean Dupont",
-  "vote": "pour"
-}
+```env
+DB_CONNECTION=pgsql
+DB_HOST=postgres
+DB_PORT=5432
+DB_DATABASE=voteclair
+DB_USERNAME=voteclair
+DB_PASSWORD=voteclair
 ```
 
----
+### 4. Lancer les migrations
 
-## Sources de données
+```bash
+php artisan migrate
+```
 
-Les données utilisées proviendront des jeux de données publics de l'Assemblée nationale française et des API open data associées.
+## Objectif produit (MVP)
 
----
+- Import des députés, groupes, scrutins et votes
+- API REST pour consultation citoyenne
+- Recherche député / circonscription
+- Fiches député et scrutin
+- Application mobile consommatrice de l'API
 
-## Roadmap
+## Documentation utile
 
-### MVP
+- Vue d'ensemble du backend Laravel: [api/README.md](api/README.md)
+- Schéma de base de données: [docs/copilot/database-schema.md](docs/copilot/database-schema.md)
+- Exemple de parcours fonctionnel: [docs/clair-api/sample-flow.md](docs/clair-api/sample-flow.md)
 
-- [ ] Import des députés
-- [ ] Import des scrutins
-- [ ] Import des votes individuels
-- [ ] API REST publique
-- [ ] Recherche de député
-- [ ] Fiche député
-- [ ] Fiche scrutin
-- [ ] Application mobile Flutter
+## Statut
 
-### V1
-
-- [ ] Géolocalisation par code postal
-- [ ] Fonction "Mon député"
-- [ ] Catégorisation des votes par thème
-- [ ] Statistiques avancées
-
-### V2
-
-- [ ] Notifications personnalisées
-- [ ] Comparaison entre députés
-- [ ] Historique des législatures
-- [ ] Ouverture aux données du Sénat
-
----
+- Backend Laravel: initialisé
+- Schéma DB + migrations métier: en place
+- Mobile Flutter: non initialisé (dossier présent)
 
 ## Licence
 
