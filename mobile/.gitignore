@@ -1,0 +1,13 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+.pub/
+build/
+
+# IDE
+.idea/
+.vscode/
+
+# Misc
+*.log
+*.iml
