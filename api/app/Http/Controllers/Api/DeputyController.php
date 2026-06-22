@@ -8,11 +8,26 @@ use App\Http\Resources\DeputyResource;
 use App\Http\Resources\VoteCollection;
 use App\Models\Deputy;
 use App\Models\Vote;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Group as ApiGroup;
+use Dedoc\Scramble\Attributes\PathParameter;
+use Dedoc\Scramble\Attributes\QueryParameter;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+#[ApiGroup('Deputies', description: 'Députés et leurs votes', weight: 20)]
 class DeputyController extends Controller
 {
+    #[Endpoint(
+        operationId: 'deputies.index',
+        title: 'Lister les députés',
+        description: 'Retourne une collection paginée de députés, filtrable par recherche et groupe.'
+    )]
+    #[QueryParameter('search', 'Filtre texte sur nom/prénom (insensible à la casse).', required: false, example: 'dupont')]
+    #[QueryParameter('group', 'Slug du groupe parlementaire.', required: false, example: 'renaissance')]
+    #[QueryParameter('page', 'Numéro de page de pagination.', required: false, example: 1)]
+    #[Response(200, 'Réponse paginée de députés.', type: 'array')]
     public function index(Request $request): DeputyCollection
     {
         $search = trim((string) $request->query('search', ''));
@@ -38,6 +53,14 @@ class DeputyController extends Controller
         return new DeputyCollection($query->paginate());
     }
 
+    #[Endpoint(
+        operationId: 'deputies.show',
+        title: 'Afficher un député',
+        description: 'Retourne le détail d\'un député à partir de son slug.'
+    )]
+    #[PathParameter('deputy', 'Slug du député.', required: true, example: 'jean-dupont')]
+    #[Response(200, 'Détail du député.', type: 'array')]
+    #[Response(404, 'Député introuvable.', type: 'array')]
     public function show(Deputy $deputy): DeputyResource
     {
         $deputy->loadMissing(['group:id,slug,nom', 'circonscription:id,nom']);
@@ -45,6 +68,15 @@ class DeputyController extends Controller
         return new DeputyResource($deputy);
     }
 
+    #[Endpoint(
+        operationId: 'deputies.votes',
+        title: 'Lister les votes d\'un député',
+        description: 'Retourne les votes d\'un député, triés du scrutin le plus récent au plus ancien.'
+    )]
+    #[PathParameter('deputy', 'Slug du député.', required: true, example: 'jean-dupont')]
+    #[QueryParameter('page', 'Numéro de page de pagination.', required: false, example: 1)]
+    #[Response(200, 'Réponse paginée de votes du député.', type: 'array')]
+    #[Response(404, 'Député introuvable.', type: 'array')]
     public function votes(Deputy $deputy): VoteCollection
     {
         $query = Vote::query()
