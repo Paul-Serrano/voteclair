@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\DeputyController;
 use App\Http\Controllers\Api\GroupController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ScrutinController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,8 @@ Route::prefix('deputies')->group(function (): void {
 });
 
 Route::get('/groups', [GroupController::class, 'index']);
+
+Route::get('/search', [SearchController::class, 'search']);
 
 Route::prefix('scrutins')->group(function (): void {
     Route::get('/', [ScrutinController::class, 'index']);

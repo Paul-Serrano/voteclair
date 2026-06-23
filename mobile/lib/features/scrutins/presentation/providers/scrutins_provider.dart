@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/api_client.dart';
 import '../../data/repositories/scrutin_repository_impl.dart';
-import '../../domain/entities/paginated_scrutins.dart';
 import '../../domain/entities/scrutin.dart';
 import '../../domain/repositories/scrutin_repository.dart';
 

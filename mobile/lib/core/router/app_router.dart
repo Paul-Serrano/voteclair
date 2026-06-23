@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../features/deputies/presentation/deputies_list_page.dart';
 import '../../features/deputies/presentation/pages/deputy_details_page.dart';
 import '../../features/deputies/presentation/pages/deputy_votes_page.dart';
+import '../../features/groups/presentation/groups_page.dart';
 import '../../features/home/presentation/home_page.dart';
+import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/scrutins/presentation/pages/scrutin_details_page.dart';
 import '../../features/scrutins/presentation/scrutins_page.dart';
 
@@ -42,6 +44,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/scrutins',
         name: 'scrutins',
         builder: (context, state) => const ScrutinsPage(),
+      ),
+      GoRoute(
+        path: '/search',
+        name: 'search',
+        builder: (context, state) => const SearchPage(),
+      ),
+      GoRoute(
+        path: '/groups/:slug',
+        name: 'group-detail-placeholder',
+        builder: (context, state) => const GroupsPage(),
       ),
       GoRoute(
         path: '/scrutins/:id',

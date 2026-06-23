@@ -37,6 +37,13 @@ class HomePage extends StatelessWidget {
             icon: Icons.ballot_outlined,
             onTap: () => context.go('/scrutins'),
           ),
+          const SizedBox(height: 12),
+          NavigationTile(
+            title: 'Rechercher',
+            subtitle: 'Trouver un depute, un groupe ou un scrutin',
+            icon: Icons.search,
+            onTap: () => context.go('/search'),
+          ),
         ],
       ),
       bottomNavigationBar: const AppBottomNavigation(currentIndex: 0),

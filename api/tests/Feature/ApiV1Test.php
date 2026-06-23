@@ -203,6 +203,36 @@ class ApiV1Test extends TestCase
             ]);
     }
 
+    public function test_search_returns_categorized_results(): void
+    {
+        $response = $this->getJson('/api/search?q=climat');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('scrutins.0.titre', 'Loi Climat')
+            ->assertJsonPath('deputies', [])
+            ->assertJsonPath('groups', [])
+            ->assertJsonStructure([
+                'deputies',
+                'groups',
+                'scrutins' => [
+                    [
+                        'id',
+                        'titre',
+                        'date',
+                        'sort',
+                    ],
+                ],
+            ]);
+
+        $responseDeputy = $this->getJson('/api/search?q=dupont');
+
+        $responseDeputy
+            ->assertOk()
+            ->assertJsonPath('deputies.0.slug', 'jean-dupont')
+            ->assertJsonPath('deputies.0.group', 'Centre');
+    }
+
     private function resetSchema(): void
     {
         Schema::disableForeignKeyConstraints();
