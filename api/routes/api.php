@@ -12,7 +12,11 @@ Route::prefix('deputies')->group(function (): void {
     Route::get('{deputy:slug}/votes', [DeputyController::class, 'votes']);
 });
 
-Route::get('/groups', [GroupController::class, 'index']);
+Route::prefix('groups')->group(function (): void {
+    Route::get('/', [GroupController::class, 'index']);
+    Route::get('{slug}', [GroupController::class, 'show']);
+    Route::get('{slug}/deputies', [GroupController::class, 'deputies']);
+});
 
 Route::get('/search', [SearchController::class, 'search']);
 

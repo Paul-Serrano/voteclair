@@ -34,7 +34,7 @@ class DeputyController extends Controller
         $groupSlug = trim((string) $request->query('group', ''));
 
         $query = Deputy::query()
-            ->with(['group:id,slug,nom', 'circonscription:id,nom']);
+            ->with(['group:id,slug,nom,couleur', 'circonscription:id,nom']);
 
         if ($search !== '') {
             $query->where(function ($q) use ($search): void {

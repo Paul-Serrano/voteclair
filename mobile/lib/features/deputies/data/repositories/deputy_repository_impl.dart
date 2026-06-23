@@ -1,8 +1,10 @@
 import '../../../../core/api/api_client.dart';
 import '../../domain/entities/deputy.dart';
+import '../../domain/entities/paginated_deputies.dart';
 import '../../domain/entities/paginated_votes.dart';
 import '../../domain/repositories/deputy_repository.dart';
 import '../dto/deputy_dto.dart';
+import '../dto/paginated_deputies_dto.dart';
 import '../dto/paginated_votes_dto.dart';
 
 class DeputyRepositoryImpl implements DeputyRepository {
@@ -11,24 +13,27 @@ class DeputyRepositoryImpl implements DeputyRepository {
   final ApiClient _apiClient;
 
   @override
-  Future<List<Deputy>> fetchDeputies() async {
-    final response = await _apiClient.get('/deputies');
+  Future<PaginatedDeputies> fetchDeputies(
+    int page, {
+    String group = '',
+    String search = '',
+  }) async {
+    final queryParameters = <String, dynamic>{'page': page};
+    if (group.trim().isNotEmpty) {
+      queryParameters['group'] = group.trim();
+    }
+    if (search.trim().isNotEmpty) {
+      queryParameters['search'] = search.trim();
+    }
+
+    final response = await _apiClient.get('/deputies', queryParameters: queryParameters);
     final payload = response.data;
 
     if (payload is! Map<String, dynamic>) {
       throw Exception('Unexpected API payload format for /deputies');
     }
 
-    final data = payload['data'];
-    if (data is! List) {
-      throw Exception('Missing data array in /deputies response');
-    }
-
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map(DeputyDto.fromJson)
-        .map((dto) => dto.toDomain())
-        .toList(growable: false);
+    return PaginatedDeputiesDto.fromJson(payload).toDomain();
   }
 
   @override

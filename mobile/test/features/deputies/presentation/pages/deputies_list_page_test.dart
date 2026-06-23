@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:voteclair_mobile/features/deputies/domain/entities/paginated_deputies.dart';
 import 'package:voteclair_mobile/features/deputies/presentation/deputies_list_page.dart';
 import 'package:voteclair_mobile/features/deputies/presentation/providers/deputies_provider.dart';
 
@@ -12,7 +13,11 @@ void main() {
   group('DeputiesListPage', () {
     testWidgets('shows loading then displays deputies list', (tester) async {
       final repository = FakeDeputyRepository(
-        deputies: const [sampleDeputy],
+        deputiesByPageAndGroup: const {
+          '': {
+            1: PaginatedDeputies(deputies: [sampleDeputy], currentPage: 1, lastPage: 1),
+          },
+        },
         fetchDeputiesDelay: const Duration(milliseconds: 50),
       );
 
@@ -23,12 +28,19 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Dupont'), findsOneWidget);
-      expect(find.text('Jean\nGroupe Test'), findsOneWidget);
+      expect(find.text('Jean'), findsOneWidget);
+      expect(find.text('Groupe Test'), findsOneWidget);
     });
 
     testWidgets('shows empty state when repository returns no deputies',
         (tester) async {
-      final repository = FakeDeputyRepository(deputies: const []);
+      final repository = FakeDeputyRepository(
+        deputiesByPageAndGroup: const {
+          '': {
+            1: PaginatedDeputies(deputies: [], currentPage: 1, lastPage: 1),
+          },
+        },
+      );
 
       await _pumpPage(tester, repository);
       await tester.pumpAndSettle();

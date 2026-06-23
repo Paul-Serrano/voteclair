@@ -1,31 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/api/api_client.dart';
-import '../../data/repositories/deputy_repository_impl.dart';
-import '../../domain/entities/deputy.dart';
-import '../../domain/repositories/deputy_repository.dart';
+import '../../domain/entities/group_member.dart';
+import 'group_details_provider.dart';
 
-final deputyRepositoryProvider = Provider<DeputyRepository>((ref) {
-  return DeputyRepositoryImpl(ref.watch(apiClientProvider));
-});
-
-class DeputiesState {
-  const DeputiesState({
-    this.deputies = const <Deputy>[],
+class GroupMembersState {
+  const GroupMembersState({
+    this.members = const <GroupMember>[],
     this.currentPage = 0,
     this.lastPage = 1,
-    this.selectedGroup = '',
-    this.searchQuery = '',
     this.isLoadingInitial = false,
     this.isLoadingMore = false,
     this.errorMessage,
   });
 
-  final List<Deputy> deputies;
+  final List<GroupMember> members;
   final int currentPage;
   final int lastPage;
-  final String selectedGroup;
-  final String searchQuery;
   final bool isLoadingInitial;
   final bool isLoadingMore;
   final String? errorMessage;
@@ -33,23 +23,19 @@ class DeputiesState {
   bool get hasMore => currentPage < lastPage;
   bool get hasInitialData => currentPage > 0;
 
-  DeputiesState copyWith({
-    List<Deputy>? deputies,
+  GroupMembersState copyWith({
+    List<GroupMember>? members,
     int? currentPage,
     int? lastPage,
-    String? selectedGroup,
-    String? searchQuery,
     bool? isLoadingInitial,
     bool? isLoadingMore,
     String? errorMessage,
     bool clearError = false,
   }) {
-    return DeputiesState(
-      deputies: deputies ?? this.deputies,
+    return GroupMembersState(
+      members: members ?? this.members,
       currentPage: currentPage ?? this.currentPage,
       lastPage: lastPage ?? this.lastPage,
-      selectedGroup: selectedGroup ?? this.selectedGroup,
-      searchQuery: searchQuery ?? this.searchQuery,
       isLoadingInitial: isLoadingInitial ?? this.isLoadingInitial,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
@@ -57,11 +43,15 @@ class DeputiesState {
   }
 }
 
-class DeputiesNotifier extends StateNotifier<DeputiesState> {
-  DeputiesNotifier({required this.ref}) : super(const DeputiesState()) {
+class GroupMembersNotifier extends StateNotifier<GroupMembersState> {
+  GroupMembersNotifier({
+    required this.slug,
+    required this.ref,
+  }) : super(const GroupMembersState()) {
     loadInitial();
   }
 
+  final String slug;
   final Ref ref;
 
   Future<void> loadInitial() async {
@@ -73,20 +63,15 @@ class DeputiesNotifier extends StateNotifier<DeputiesState> {
       isLoadingInitial: true,
       isLoadingMore: false,
       clearError: true,
-      deputies: const <Deputy>[],
+      members: const <GroupMember>[],
       currentPage: 0,
       lastPage: 1,
     );
 
     try {
-      final page = await ref.read(deputyRepositoryProvider).fetchDeputies(
-        1,
-        group: state.selectedGroup,
-        search: state.searchQuery,
-      );
-
+      final page = await ref.read(groupRepositoryProvider).getDeputies(slug, 1);
       state = state.copyWith(
-        deputies: page.deputies,
+        members: page.members,
         currentPage: page.currentPage,
         lastPage: page.lastPage,
         isLoadingInitial: false,
@@ -106,26 +91,6 @@ class DeputiesNotifier extends StateNotifier<DeputiesState> {
     await loadInitial();
   }
 
-  Future<void> applyGroupFilter(String groupSlug) async {
-    final normalized = groupSlug.trim();
-    if (normalized == state.selectedGroup) {
-      return;
-    }
-
-    state = state.copyWith(selectedGroup: normalized, clearError: true);
-    await loadInitial();
-  }
-
-  Future<void> applySearch(String query) async {
-    final normalized = query.trim();
-    if (normalized == state.searchQuery) {
-      return;
-    }
-
-    state = state.copyWith(searchQuery: normalized, clearError: true);
-    await loadInitial();
-  }
-
   Future<void> loadNextPage() async {
     if (state.isLoadingInitial || state.isLoadingMore || !state.hasMore) {
       return;
@@ -135,15 +100,11 @@ class DeputiesNotifier extends StateNotifier<DeputiesState> {
     state = state.copyWith(isLoadingMore: true, clearError: true);
 
     try {
-      final page = await ref.read(deputyRepositoryProvider).fetchDeputies(
-        nextPage,
-        group: state.selectedGroup,
-        search: state.searchQuery,
-      );
-      final merged = <Deputy>[...state.deputies, ...page.deputies];
+      final page = await ref.read(groupRepositoryProvider).getDeputies(slug, nextPage);
+      final merged = <GroupMember>[...state.members, ...page.members];
 
       state = state.copyWith(
-        deputies: merged,
+        members: merged,
         currentPage: page.currentPage,
         lastPage: page.lastPage,
         isLoadingMore: false,
@@ -157,6 +118,7 @@ class DeputiesNotifier extends StateNotifier<DeputiesState> {
   }
 }
 
-final deputiesProvider = StateNotifierProvider<DeputiesNotifier, DeputiesState>((ref) {
-  return DeputiesNotifier(ref: ref);
+final groupMembersProvider =
+    StateNotifierProvider.family<GroupMembersNotifier, GroupMembersState, String>((ref, slug) {
+  return GroupMembersNotifier(slug: slug, ref: ref);
 });

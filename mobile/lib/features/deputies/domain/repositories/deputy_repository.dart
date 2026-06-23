@@ -1,8 +1,13 @@
 import '../entities/deputy.dart';
+import '../entities/paginated_deputies.dart';
 import '../entities/paginated_votes.dart';
 
 abstract class DeputyRepository {
-  Future<List<Deputy>> fetchDeputies();
+  Future<PaginatedDeputies> fetchDeputies(
+    int page, {
+    String group = '',
+    String search = '',
+  });
 
   Future<Deputy> getBySlug(String slug);
 

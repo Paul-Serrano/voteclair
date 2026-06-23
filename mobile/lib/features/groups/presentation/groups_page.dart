@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
+import 'pages/group_details_page.dart';
+
 class GroupsPage extends StatelessWidget {
-  const GroupsPage({super.key});
+  const GroupsPage({required this.slug, super.key});
+
+  final String slug;
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Groups placeholder'),
-      ),
-    );
+    return GroupDetailsPage(slug: slug);
   }
 }

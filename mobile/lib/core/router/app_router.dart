@@ -5,6 +5,7 @@ import '../../features/deputies/presentation/deputies_list_page.dart';
 import '../../features/deputies/presentation/pages/deputy_details_page.dart';
 import '../../features/deputies/presentation/pages/deputy_votes_page.dart';
 import '../../features/groups/presentation/groups_page.dart';
+import '../../features/groups/presentation/pages/groups_list_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/scrutins/presentation/pages/scrutin_details_page.dart';
@@ -51,9 +52,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SearchPage(),
       ),
       GoRoute(
+        path: '/groups',
+        name: 'groups',
+        builder: (context, state) => const GroupsListPage(),
+      ),
+      GoRoute(
         path: '/groups/:slug',
-        name: 'group-detail-placeholder',
-        builder: (context, state) => const GroupsPage(),
+        name: 'group-detail',
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return GroupsPage(slug: slug);
+        },
       ),
       GoRoute(
         path: '/scrutins/:id',

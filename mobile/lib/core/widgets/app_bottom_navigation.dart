@@ -19,6 +19,8 @@ class AppBottomNavigation extends StatelessWidget {
           case 2:
             context.go('/scrutins');
           case 3:
+            context.go('/groups');
+          case 4:
             context.go('/search');
         }
       },
@@ -37,6 +39,11 @@ class AppBottomNavigation extends StatelessWidget {
           icon: Icon(Icons.ballot_outlined),
           selectedIcon: Icon(Icons.ballot),
           label: 'Scrutins',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.groups_outlined),
+          selectedIcon: Icon(Icons.groups),
+          label: 'Groupes',
         ),
         NavigationDestination(
           icon: Icon(Icons.search_outlined),

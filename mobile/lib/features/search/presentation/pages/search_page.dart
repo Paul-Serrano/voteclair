@@ -37,7 +37,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Recherche')),
-      bottomNavigationBar: const AppBottomNavigation(currentIndex: 3),
+      bottomNavigationBar: const AppBottomNavigation(currentIndex: 4),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

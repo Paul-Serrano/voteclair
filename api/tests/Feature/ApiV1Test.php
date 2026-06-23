@@ -27,6 +27,8 @@ class ApiV1Test extends TestCase
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0.slug', 'g-centre')
             ->assertJsonPath('data.1.slug', 'g-gauche')
+            ->assertJsonPath('data.0.membres_count', 1)
+            ->assertJsonPath('data.1.membres_count', 1)
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -36,8 +38,78 @@ class ApiV1Test extends TestCase
                         'couleur',
                         'logo_url',
                         'position',
+                        'membres_count',
                     ],
                 ],
+            ]);
+    }
+
+    public function test_group_show_returns_group_details_with_stats(): void
+    {
+        $response = $this->getJson('/api/groups/g-centre');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.slug', 'g-centre')
+            ->assertJsonPath('data.nom', 'Centre')
+            ->assertJsonPath('data.institution.slug', 'assemblee-nationale')
+            ->assertJsonPath('data.membres_count', 1)
+            ->assertJsonPath('data.stats.presence', 32)
+            ->assertJsonPath('data.stats.presence_solennelle', 91)
+            ->assertJsonPath('data.stats.loyaute', 99)
+            ->assertJsonPath('data.stats.cohesion', 99)
+            ->assertJsonPath('data.stats.participation', 168139)
+            ->assertJsonPath('data.stats.votes_pour', 82918)
+            ->assertJsonPath('data.stats.votes_contre', 76810)
+            ->assertJsonPath('data.stats.votes_abstention', 8411)
+            ->assertJsonPath('data.stats.votes_absent', 0)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'slug',
+                    'nom',
+                    'nom_complet',
+                    'couleur',
+                    'logo_url',
+                    'position',
+                    'membres_count',
+                    'institution' => ['slug', 'nom', 'pays'],
+                    'stats' => [
+                        'presence',
+                        'presence_solennelle',
+                        'loyaute',
+                        'cohesion',
+                        'participation',
+                        'votes_pour',
+                        'votes_contre',
+                        'votes_abstention',
+                        'votes_absent',
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_group_deputies_returns_paginated_members(): void
+    {
+        $response = $this->getJson('/api/groups/g-centre/deputies');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.slug', 'jean-dupont')
+            ->assertJsonPath('data.0.stats_presence', 91)
+            ->assertJsonStructure([
+                'data' => [
+                    [
+                        'slug',
+                        'nom',
+                        'prenom',
+                        'photo_url',
+                        'stats_presence',
+                    ],
+                ],
+                'links',
+                'meta',
             ]);
     }
 
@@ -268,6 +340,16 @@ class ApiV1Test extends TestCase
             $table->string('position')->nullable();
             $table->integer('ordre')->nullable();
             $table->boolean('actif')->default(true);
+            $table->integer('stats_membres_actifs')->nullable();
+            $table->smallInteger('stats_presence_moyenne')->nullable();
+            $table->smallInteger('stats_presence_solennel_moyenne')->nullable();
+            $table->smallInteger('stats_loyaute_moyenne')->nullable();
+            $table->smallInteger('stats_cohesion')->nullable();
+            $table->integer('stats_participation')->nullable();
+            $table->integer('stats_votes_pour')->nullable();
+            $table->integer('stats_votes_contre')->nullable();
+            $table->integer('stats_votes_abstention')->nullable();
+            $table->integer('stats_votes_absent')->nullable();
             $table->timestamp('stats_calculated_at')->nullable();
             $table->timestamp('last_synced_at')->nullable();
             $table->timestamps();
@@ -359,6 +441,16 @@ class ApiV1Test extends TestCase
                 'position' => 'CENTRE',
                 'ordre' => 1,
                 'actif' => true,
+                'stats_membres_actifs' => 1,
+                'stats_presence_moyenne' => 32,
+                'stats_presence_solennel_moyenne' => 91,
+                'stats_loyaute_moyenne' => 99,
+                'stats_cohesion' => 99,
+                'stats_participation' => 168139,
+                'stats_votes_pour' => 82918,
+                'stats_votes_contre' => 76810,
+                'stats_votes_abstention' => 8411,
+                'stats_votes_absent' => 0,
                 'stats_calculated_at' => null,
                 'last_synced_at' => now(),
                 'created_at' => now(),
@@ -376,6 +468,16 @@ class ApiV1Test extends TestCase
                 'position' => 'GAUCHE',
                 'ordre' => 2,
                 'actif' => true,
+                'stats_membres_actifs' => 1,
+                'stats_presence_moyenne' => 41,
+                'stats_presence_solennel_moyenne' => 88,
+                'stats_loyaute_moyenne' => 93,
+                'stats_cohesion' => 94,
+                'stats_participation' => 151234,
+                'stats_votes_pour' => 54000,
+                'stats_votes_contre' => 89000,
+                'stats_votes_abstention' => 8234,
+                'stats_votes_absent' => 0,
                 'stats_calculated_at' => null,
                 'last_synced_at' => now(),
                 'created_at' => now(),

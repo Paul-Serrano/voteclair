@@ -7,6 +7,7 @@ class DeputyDto {
     required this.prenom,
     required this.photoUrl,
     required this.groupName,
+    this.groupSlug,
     this.groupColor,
     this.profession,
     this.circonscriptionName,
@@ -32,6 +33,7 @@ class DeputyDto {
   final String prenom;
   final String? photoUrl;
   final String? groupName;
+  final String? groupSlug;
   final String? groupColor;
   final String? profession;
   final String? circonscriptionName;
@@ -62,6 +64,7 @@ class DeputyDto {
       prenom: (json['prenom'] as String?) ?? '',
       photoUrl: json['photo_url'] as String?,
       groupName: group?['nom'] as String?,
+      groupSlug: group?['slug'] as String?,
       groupColor: group?['couleur'] as String?,
       profession: json['profession'] as String?,
       circonscriptionName: circonscription?['nom'] as String?,
@@ -90,6 +93,7 @@ class DeputyDto {
       prenom: prenom,
       photoUrl: photoUrl,
       groupName: groupName,
+      groupSlug: groupSlug,
       groupColor: groupColor,
       profession: profession,
       circonscriptionName: circonscriptionName,

@@ -13,7 +13,7 @@ void main() {
   testWidgets('renders loaded scrutins list', (tester) async {
     final repository = FakeScrutinRepository(
       scrutinsByPage: {
-        1: PaginatedScrutins(
+        1: const PaginatedScrutins(
           scrutins: [sampleScrutin, sampleScrutinWithDifferentResult],
           currentPage: 1,
           lastPage: 1,
@@ -41,7 +41,7 @@ void main() {
   testWidgets('filters scrutins by search query', (tester) async {
     final repository = FakeScrutinRepository(
       scrutinsByPage: {
-        1: PaginatedScrutins(
+        1: const PaginatedScrutins(
           scrutins: [sampleScrutin, sampleScrutinWithDifferentResult],
           currentPage: 1,
           lastPage: 1,

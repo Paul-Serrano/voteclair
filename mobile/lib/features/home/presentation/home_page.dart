@@ -39,6 +39,13 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           NavigationTile(
+            title: 'Groupes',
+            subtitle: 'Acceder a la liste des groupes parlementaires',
+            icon: Icons.groups_outlined,
+            onTap: () => context.go('/groups'),
+          ),
+          const SizedBox(height: 12),
+          NavigationTile(
             title: 'Rechercher',
             subtitle: 'Trouver un depute, un groupe ou un scrutin',
             icon: Icons.search,

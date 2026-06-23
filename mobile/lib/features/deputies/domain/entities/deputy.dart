@@ -5,6 +5,7 @@ class Deputy {
     required this.prenom,
     required this.photoUrl,
     required this.groupName,
+    this.groupSlug,
     this.groupColor,
     this.profession,
     this.circonscriptionName,
@@ -30,6 +31,7 @@ class Deputy {
   final String prenom;
   final String? photoUrl;
   final String? groupName;
+  final String? groupSlug;
   final String? groupColor;
   final String? profession;
   final String? circonscriptionName;
