@@ -1,7 +1,9 @@
 import '../../../../core/api/api_client.dart';
 import '../../domain/entities/deputy.dart';
+import '../../domain/entities/paginated_votes.dart';
 import '../../domain/repositories/deputy_repository.dart';
 import '../dto/deputy_dto.dart';
+import '../dto/paginated_votes_dto.dart';
 
 class DeputyRepositoryImpl implements DeputyRepository {
   DeputyRepositoryImpl(this._apiClient);
@@ -44,5 +46,21 @@ class DeputyRepositoryImpl implements DeputyRepository {
     }
 
     return DeputyDto.fromJson(data).toDomain();
+  }
+
+  @override
+  Future<PaginatedVotes> getVotes(String slug, int page) async {
+    final response = await _apiClient.get(
+      '/deputies/$slug/votes',
+      queryParameters: <String, dynamic>{'page': page},
+    );
+    final payload = response.data;
+
+    if (payload is! Map<String, dynamic>) {
+      throw Exception(
+          'Unexpected API payload format for /deputies/$slug/votes');
+    }
+
+    return PaginatedVotesDto.fromJson(payload).toDomain();
   }
 }

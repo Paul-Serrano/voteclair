@@ -16,9 +16,11 @@ class VoteResource extends JsonResource
             'position' => $this->position,
             'delegated' => $this->delegated,
             'scrutin' => $this->whenLoaded('scrutin', fn (): array => [
+                'id' => $this->scrutin->id,
                 'numero' => $this->scrutin->numero,
                 'titre' => $this->scrutin->titre,
                 'date' => $this->scrutin->date?->toDateString(),
+                'sort' => $this->scrutin->sort,
             ]),
             'deputy' => $this->whenLoaded('deputy', fn (): array => [
                 'slug' => $this->deputy->slug,

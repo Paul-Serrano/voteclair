@@ -2,6 +2,26 @@
 
 A new Flutter project.
 
+## Test scaffolding
+
+To generate a new deputies screen test scaffold, run:
+
+```bash
+cd mobile
+dart run tool/generate_deputy_test.dart \
+	--mode list|details|votes \
+	--output test/features/deputies/presentation/pages/new_test.dart \
+	--import package:voteclair_mobile/features/deputies/presentation/pages/new_page.dart \
+	--widget NewPage \
+	--slug jean-dupont
+```
+
+The generator reuses the shared deputy fixtures and fake repository used by the
+existing sprint tests.
+
+The full step-by-step workflow is documented in
+[docs/copilot/06-mobile-testing-workflow.md](../docs/copilot/06-mobile-testing-workflow.md).
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
