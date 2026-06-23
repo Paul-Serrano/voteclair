@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/deputies/presentation/deputies_list_page.dart';
 import '../../features/deputies/presentation/pages/deputy_details_page.dart';
 import '../../features/deputies/presentation/pages/deputy_votes_page.dart';
 import '../../features/groups/presentation/groups_page.dart';
 import '../../features/groups/presentation/pages/groups_list_page.dart';
-import '../../features/home/presentation/home_page.dart';
 import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/scrutins/presentation/pages/scrutin_details_page.dart';
 import '../../features/scrutins/presentation/scrutins_page.dart';
@@ -18,7 +18,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/',
         name: 'home',
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => const DashboardPage(),
       ),
       GoRoute(
         path: '/deputies',

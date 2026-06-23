@@ -607,4 +607,42 @@ class ApiV1Test extends TestCase
             ],
         ]);
     }
+
+    public function test_dashboard_returns_stats_and_recent_activity(): void
+    {
+        $response = $this->getJson('/api/dashboard');
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'stats' => ['deputies', 'groups', 'scrutins', 'votes'],
+                    'latest_scrutins' => [
+                        [
+                            'id',
+                            'numero',
+                            'titre',
+                            'date',
+                            'sort',
+                        ],
+                    ],
+                    'top_groups' => [
+                        [
+                            'slug',
+                            'nom',
+                            'couleur',
+                            'members_count',
+                        ],
+                    ],
+                    'recent_activity' => [
+                        'last_scrutin_date',
+                        'last_scrutin_title',
+                    ],
+                ],
+            ])
+            ->assertJsonPath('data.stats.deputies', 2)
+            ->assertJsonPath('data.stats.groups', 2)
+            ->assertJsonPath('data.stats.scrutins', 2)
+            ->assertJsonPath('data.stats.votes', 3);
+    }
 }

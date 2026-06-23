@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DeputyController;
 use App\Http\Controllers\Api\GroupController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ScrutinController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/dashboard', [DashboardController::class, 'index']);
 
 Route::prefix('deputies')->group(function (): void {
     Route::get('/', [DeputyController::class, 'index']);
