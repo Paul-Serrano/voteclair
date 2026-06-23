@@ -28,4 +28,21 @@ class DeputyRepositoryImpl implements DeputyRepository {
         .map((dto) => dto.toDomain())
         .toList(growable: false);
   }
+
+  @override
+  Future<Deputy> getBySlug(String slug) async {
+    final response = await _apiClient.get('/deputies/$slug');
+    final payload = response.data;
+
+    if (payload is! Map<String, dynamic>) {
+      throw Exception('Unexpected API payload format for /deputies/$slug');
+    }
+
+    final data = payload['data'];
+    if (data is! Map<String, dynamic>) {
+      throw Exception('Missing data object in /deputies/$slug response');
+    }
+
+    return DeputyDto.fromJson(data).toDomain();
+  }
 }

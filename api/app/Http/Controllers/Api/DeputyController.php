@@ -63,7 +63,7 @@ class DeputyController extends Controller
     #[Response(404, 'Député introuvable.', type: 'array')]
     public function show(Deputy $deputy): DeputyResource
     {
-        $deputy->loadMissing(['group:id,slug,nom', 'circonscription:id,nom']);
+        $deputy->loadMissing(['group:id,slug,nom,couleur', 'circonscription:id,nom,departement,departement_name']);
 
         return new DeputyResource($deputy);
     }

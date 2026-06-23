@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/deputies/presentation/deputies_list_page.dart';
-import '../../features/deputies/presentation/deputy_detail_page.dart';
+import '../../features/deputies/presentation/pages/deputy_details_page.dart';
+import '../../features/deputies/presentation/pages/deputy_votes_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/scrutins/presentation/scrutin_detail_page.dart';
 import '../../features/scrutins/presentation/scrutins_page.dart';
@@ -26,7 +27,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'deputy-detail',
         builder: (context, state) {
           final slug = state.pathParameters['slug'] ?? '';
-          return DeputyDetailPage(slug: slug);
+          return DeputyDetailsPage(slug: slug);
+        },
+      ),
+      GoRoute(
+        path: '/deputies/:slug/votes',
+        name: 'deputy-votes',
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return DeputyVotesPage(slug: slug);
         },
       ),
       GoRoute(
