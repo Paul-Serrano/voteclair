@@ -26,6 +26,11 @@ class VoteResource extends JsonResource
                 'slug' => $this->deputy->slug,
                 'nom' => $this->deputy->nom,
                 'prenom' => $this->deputy->prenom,
+                'group' => $this->deputy->relationLoaded('group') ? [
+                    'slug' => $this->deputy->group->slug,
+                    'nom' => $this->deputy->group->nom,
+                    'couleur' => $this->deputy->group->couleur,
+                ] : null,
             ]),
         ];
     }

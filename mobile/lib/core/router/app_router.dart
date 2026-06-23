@@ -5,7 +5,7 @@ import '../../features/deputies/presentation/deputies_list_page.dart';
 import '../../features/deputies/presentation/pages/deputy_details_page.dart';
 import '../../features/deputies/presentation/pages/deputy_votes_page.dart';
 import '../../features/home/presentation/home_page.dart';
-import '../../features/scrutins/presentation/scrutin_detail_page.dart';
+import '../../features/scrutins/presentation/pages/scrutin_details_page.dart';
 import '../../features/scrutins/presentation/scrutins_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -48,7 +48,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'scrutin-detail',
         builder: (context, state) {
           final scrutinId = state.pathParameters['id'] ?? '';
-          return ScrutinDetailPage(scrutinId: scrutinId);
+          return ScrutinDetailsPage(scrutinId: scrutinId);
         },
       ),
     ],

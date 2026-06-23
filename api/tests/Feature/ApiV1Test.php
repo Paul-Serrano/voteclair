@@ -124,6 +124,7 @@ class ApiV1Test extends TestCase
             ->assertJsonPath('data.0.id', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
             ->assertJsonPath('data.0.numero', 101)
             ->assertJsonPath('data.0.sort', 'REJETE')
+            ->assertJsonPath('data.0.institution.slug', 'assemblee-nationale')
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -163,6 +164,18 @@ class ApiV1Test extends TestCase
             ->assertJsonPath('data.id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
             ->assertJsonPath('data.numero', 100)
             ->assertJsonPath('data.titre', 'Loi Climat')
+            ->assertJsonPath('data.institution.slug', 'assemblee-nationale')
+            ->assertJsonPath('data.resultats.pour', 1)
+            ->assertJsonPath('data.resultats.contre', 0)
+            ->assertJsonPath('data.resultats.abstention', 1)
+            ->assertJsonPath('data.resultats.non_votant', 0)
+            ->assertJsonPath('data.resultats.total', 2)
+            ->assertJsonPath('data.groupes.0.slug', 'g-centre')
+            ->assertJsonPath('data.groupes.0.pour', 1)
+            ->assertJsonPath('data.groupes.0.total', 1)
+            ->assertJsonPath('data.groupes.1.slug', 'g-gauche')
+            ->assertJsonPath('data.groupes.1.abstention', 1)
+            ->assertJsonPath('data.groupes.1.total', 1)
             ->assertJsonPath('data.dossier.titre', 'Projet de loi Climat');
     }
 
@@ -174,13 +187,15 @@ class ApiV1Test extends TestCase
             ->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0.deputy.slug', 'jean-dupont')
+            ->assertJsonPath('data.0.deputy.group.slug', 'g-centre')
             ->assertJsonPath('data.1.deputy.slug', 'marie-durand')
+            ->assertJsonPath('data.1.deputy.group.slug', 'g-gauche')
             ->assertJsonStructure([
                 'data' => [
                     [
                         'position',
                         'delegated',
-                        'deputy' => ['slug', 'nom', 'prenom'],
+                        'deputy' => ['slug', 'nom', 'prenom', 'group' => ['slug', 'nom', 'couleur']],
                     ],
                 ],
                 'links',
@@ -264,6 +279,10 @@ class ApiV1Test extends TestCase
             $table->timestamp('date');
             $table->text('titre');
             $table->string('sort')->nullable();
+            $table->integer('nombre_votants')->default(0);
+            $table->integer('nombre_pour')->default(0);
+            $table->integer('nombre_contre')->default(0);
+            $table->integer('nombre_abstention')->default(0);
             $table->text('demandeur_texte')->nullable();
             $table->text('source_url')->nullable();
             $table->text('dossier_titre')->nullable();
@@ -394,6 +413,10 @@ class ApiV1Test extends TestCase
                 'date' => '2026-06-10 12:00:00',
                 'titre' => 'Loi Climat',
                 'sort' => 'ADOPTE',
+                'nombre_votants' => 276,
+                'nombre_pour' => 85,
+                'nombre_contre' => 180,
+                'nombre_abstention' => 11,
                 'demandeur_texte' => 'Gouvernement',
                 'source_url' => 'https://example.test/scrutins/100',
                 'dossier_titre' => 'Projet de loi Climat',
@@ -410,6 +433,10 @@ class ApiV1Test extends TestCase
                 'date' => '2026-06-20 09:00:00',
                 'titre' => 'Budget Defense',
                 'sort' => 'REJETE',
+                'nombre_votants' => 273,
+                'nombre_pour' => 5,
+                'nombre_contre' => 261,
+                'nombre_abstention' => 7,
                 'demandeur_texte' => 'Commission',
                 'source_url' => 'https://example.test/scrutins/101',
                 'dossier_titre' => 'Projet Budget Defense',

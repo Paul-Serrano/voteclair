@@ -37,7 +37,7 @@ class ScrutinController extends Controller
         $from = trim((string) $request->query('from', ''));
         $to = trim((string) $request->query('to', ''));
 
-        $query = Scrutin::query();
+        $query = Scrutin::query()->with(['institution:id,slug,nom,pays']);
 
         if ($search !== '') {
             $query->whereRaw('LOWER(titre) LIKE ?', ['%'.Str::lower($search).'%']);
@@ -70,6 +70,13 @@ class ScrutinController extends Controller
     #[Response(404, 'Scrutin introuvable.', type: 'array')]
     public function show(Scrutin $scrutin): ScrutinResource
     {
+        $scrutin->loadMissing([
+            'institution:id,slug,nom,pays',
+            'institution.deputies:id,institution_id,groupe_id,actif',
+            'institution.deputies.group:id,slug,nom,couleur',
+            'votes.deputy.group:id,slug,nom,couleur',
+        ]);
+
         return new ScrutinResource($scrutin);
     }
 
@@ -86,7 +93,8 @@ class ScrutinController extends Controller
     {
         $votes = Vote::query()
             ->where('scrutin_id', $scrutin->id)
-            ->with('deputy:id,slug,nom,prenom')
+            ->with(['deputy.group:id,slug,nom,couleur'])
+            ->orderBy('id')
             ->paginate();
 
         return new VoteCollection($votes);

@@ -335,6 +335,10 @@ class ImportCommandsTest extends TestCase
             $table->timestamp('date');
             $table->text('titre');
             $table->string('sort')->nullable();
+            $table->integer('nombre_votants')->default(0);
+            $table->integer('nombre_pour')->default(0);
+            $table->integer('nombre_contre')->default(0);
+            $table->integer('nombre_abstention')->default(0);
             $table->text('demandeur_texte')->nullable();
             $table->text('source_url')->nullable();
             $table->text('dossier_titre')->nullable();
@@ -437,6 +441,10 @@ class ImportCommandsTest extends TestCase
                 'date' => '2026-06-16 00:00:00',
                 'titre' => 'Scrutin test',
                 'sort' => 'REJETE',
+                'nombre_votants' => 276,
+                'nombre_pour' => 85,
+                'nombre_contre' => 180,
+                'nombre_abstention' => 11,
                 'demandeur_texte' => null,
                 'source_url' => null,
                 'dossier_titre' => null,
