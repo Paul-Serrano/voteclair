@@ -14,22 +14,26 @@ class GroupStatsCard extends StatelessWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Statistiques du groupe',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             _StatsGrid(group: group),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               'Repartition des votes',
-              style: Theme.of(context).textTheme.titleSmall,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             _VoteProgressRow(
               label: 'POUR',
               value: stats.votesPour,
@@ -84,9 +88,9 @@ class _StatsGrid extends StatelessWidget {
       itemCount: items.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        childAspectRatio: 2.2,
+        mainAxisSpacing: 6,
+        crossAxisSpacing: 6,
+        mainAxisExtent: 58,
       ),
       itemBuilder: (context, index) {
         final item = items[index];
@@ -94,16 +98,23 @@ class _StatsGrid extends StatelessWidget {
           elevation: 0,
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.label, style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  item.label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   item.value.toString(),
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -132,7 +143,7 @@ class _VoteProgressRow extends StatelessWidget {
     final progress = total <= 0 ? 0.0 : (value / total).clamp(0, 1).toDouble();
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         children: [
           Row(
@@ -141,11 +152,11 @@ class _VoteProgressRow extends StatelessWidget {
               Text('$value'),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           LinearProgressIndicator(
             value: progress,
             color: color,
-            minHeight: 8,
+            minHeight: 7,
             borderRadius: BorderRadius.circular(8),
           ),
         ],
