@@ -105,6 +105,19 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        'voteclair' => [
+            'driver' => env('VOTECLAIR_LOG_CHANNEL', 'daily') === 'stderr' ? 'monolog' : env('VOTECLAIR_LOG_CHANNEL', 'daily'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => env('VOTECLAIR_LOG_CHANNEL', 'daily') === 'stderr' ? StreamHandler::class : null,
+            'handler_with' => env('VOTECLAIR_LOG_CHANNEL', 'daily') === 'stderr' ? [
+                'stream' => 'php://stderr',
+            ] : [],
+            'path' => storage_path('logs/voteclair.log'),
+            'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+            'processors' => [PsrLogMessageProcessor::class],
+        ],
+
         'syslog' => [
             'driver' => 'syslog',
             'level' => env('LOG_LEVEL', 'debug'),
