@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard_group_tile.dart';
 import '../widgets/dashboard_scrutin_tile.dart';
@@ -102,6 +103,9 @@ class DashboardPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Favorites shortcut
+                      _FavoritesCard(ref: ref),
+                      const SizedBox(height: 20),
                       // Stats Section
                       Text(
                         'Statistiques',
@@ -335,5 +339,64 @@ class DashboardPage extends ConsumerWidget {
       return '${(value / 1000).toStringAsFixed(1)}K';
     }
     return value.toString();
+  }
+}
+
+class _FavoritesCard extends ConsumerWidget {
+  const _FavoritesCard({required this.ref});
+
+  // ignore: unused_field
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final slugsAsync = ref.watch(favoriteSlugsNotifierProvider);
+    final count = slugsAsync.value?.length ?? 0;
+
+    return Card(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => context.push('/favorites'),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.favorite, color: Colors.red, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mes députés favoris',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      count == 0
+                          ? 'Aucun favori pour l\'instant'
+                          : '$count député${count > 1 ? 's' : ''} suivi${count > 1 ? 's' : ''}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

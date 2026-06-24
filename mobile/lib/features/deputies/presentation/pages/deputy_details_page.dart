@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../domain/entities/deputy.dart';
 import '../providers/deputy_details_provider.dart';
 
@@ -14,6 +15,8 @@ class DeputyDetailsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final deputyAsync = ref.watch(deputyDetailsProvider(slug));
+
+    final isFav = ref.watch(isFavoriteProvider(slug));
 
     return Scaffold(
       appBar: AppBar(
@@ -29,6 +32,30 @@ class DeputyDetailsPage extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Retour',
         ),
+        actions: [
+          IconButton(
+            tooltip: isFav ? 'Retirer des favoris' : 'Ajouter aux favoris',
+            icon: Icon(
+              isFav ? Icons.favorite : Icons.favorite_border,
+              color: isFav ? Colors.red : null,
+            ),
+            onPressed: () async {
+              final added = await ref
+                  .read(favoriteSlugsNotifierProvider.notifier)
+                  .toggle(slug);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      added ? 'Ajouté aux favoris' : 'Retiré des favoris',
+                    ),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: deputyAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

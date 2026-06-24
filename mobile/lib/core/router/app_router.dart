@@ -5,6 +5,7 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/deputies/presentation/deputies_list_page.dart';
 import '../../features/deputies/presentation/pages/deputy_details_page.dart';
 import '../../features/deputies/presentation/pages/deputy_votes_page.dart';
+import '../../features/favorites/presentation/pages/favorites_page.dart';
 import '../../features/groups/presentation/groups_page.dart';
 import '../../features/groups/presentation/pages/groups_list_page.dart';
 import '../../features/search/presentation/pages/search_page.dart';
@@ -19,6 +20,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/',
         name: 'home',
         builder: (context, state) => const DashboardPage(),
+      ),
+      GoRoute(
+        path: '/favorites',
+        name: 'favorites',
+        builder: (context, state) => const FavoritesPage(),
       ),
       GoRoute(
         path: '/deputies',
