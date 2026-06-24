@@ -16,6 +16,9 @@ import 'package:voteclair_mobile/features/dashboard/domain/entities/dashboard_st
 import 'package:voteclair_mobile/features/dashboard/domain/entities/recent_activity.dart';
 import 'package:voteclair_mobile/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:voteclair_mobile/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:voteclair_mobile/features/favorites/presentation/providers/favorites_provider.dart';
+import 'package:voteclair_mobile/features/activity/domain/entities/activity_item.dart';
+import 'package:voteclair_mobile/features/activity/presentation/providers/favorites_activity_provider.dart';
 import 'package:voteclair_mobile/main.dart';
 
 class FakeDashboardRepository implements DashboardRepository {
@@ -54,6 +57,11 @@ class FakeDashboardRepository implements DashboardRepository {
   }
 }
 
+class FakeFavoriteSlugsNotifier extends FavoriteSlugsNotifier {
+  @override
+  Future<List<String>> build() async => const <String>[];
+}
+
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('fr_FR');
@@ -65,6 +73,13 @@ void main() {
         overrides: [
           dashboardRepositoryProvider
               .overrideWithValue(FakeDashboardRepository()),
+          favoriteSlugsNotifierProvider.overrideWith(FakeFavoriteSlugsNotifier.new),
+          favoritesActivityProvider.overrideWith(
+            (ref) async => const <ActivityItem>[],
+          ),
+          favoritesActivityPreviewProvider.overrideWith(
+            (ref) async => const <ActivityItem>[],
+          ),
         ],
         child: const VoteClairApp(),
       ),

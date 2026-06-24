@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/activity/presentation/pages/favorites_activity_page.dart';
 import '../../features/deputies/presentation/deputies_list_page.dart';
 import '../../features/deputies/presentation/pages/deputy_details_page.dart';
 import '../../features/deputies/presentation/pages/deputy_votes_page.dart';
@@ -25,6 +26,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/favorites',
         name: 'favorites',
         builder: (context, state) => const FavoritesPage(),
+      ),
+      GoRoute(
+        path: '/favorites/activity',
+        name: 'favorites-activity',
+        builder: (context, state) => const FavoritesActivityPage(),
       ),
       GoRoute(
         path: '/deputies',

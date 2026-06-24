@@ -645,4 +645,74 @@ class ApiV1Test extends TestCase
             ->assertJsonPath('data.stats.scrutins', 2)
             ->assertJsonPath('data.stats.votes', 3);
     }
+
+    public function test_favorites_activity_returns_latest_vote_per_deputy_sorted_by_vote_date_desc(): void
+    {
+        $response = $this->getJson('/api/favorites/activity?slugs=marie-durand,jean-dupont');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.deputy.slug', 'jean-dupont')
+            ->assertJsonPath('data.0.latest_vote.position', 'CONTRE')
+            ->assertJsonPath('data.0.latest_vote.scrutin.id', 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')
+            ->assertJsonPath('data.1.deputy.slug', 'marie-durand')
+            ->assertJsonPath('data.1.latest_vote.position', 'ABSTENTION')
+            ->assertJsonPath('data.1.latest_vote.scrutin.id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+            ->assertJsonStructure([
+                'data' => [
+                    [
+                        'deputy' => ['slug', 'nom', 'prenom', 'photo_url'],
+                        'latest_vote' => [
+                            'id',
+                            'position',
+                            'scrutin' => ['id', 'titre', 'date'],
+                        ],
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_favorites_activity_returns_empty_data_for_missing_or_unknown_slugs(): void
+    {
+        $responseNoParam = $this->getJson('/api/favorites/activity');
+        $responseNoParam
+            ->assertOk()
+            ->assertJsonPath('data', []);
+
+        $responseUnknown = $this->getJson('/api/favorites/activity?slugs=unknown-slug');
+        $responseUnknown
+            ->assertOk()
+            ->assertJsonPath('data', []);
+    }
+
+    public function test_favorites_activity_ignores_favorites_without_votes(): void
+    {
+        DB::table('deputies')->insert([
+            'id' => 'dep-3',
+            'institution_id' => 'inst-an',
+            'groupe_id' => 'grp-centre',
+            'circonscription_id' => null,
+            'source_id' => '841003',
+            'slug' => 'alice-sans-vote',
+            'nom' => 'SansVote',
+            'prenom' => 'Alice',
+            'profession' => 'Juriste',
+            'photo_url' => null,
+            'actif' => true,
+            'stats_presence' => 10,
+            'stats_loyaute' => 10,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/favorites/activity?slugs=alice-sans-vote,jean-dupont');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.deputy.slug', 'jean-dupont');
+    }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../providers/favorites_provider.dart';
@@ -15,6 +16,13 @@ class FavoritesPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mes favoris'),
+        actions: [
+          IconButton(
+            onPressed: () => context.push('/favorites/activity'),
+            icon: const Icon(Icons.history),
+            tooltip: 'Activité',
+          ),
+        ],
       ),
       body: favoritesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

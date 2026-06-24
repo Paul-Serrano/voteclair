@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../activity/presentation/providers/favorites_activity_provider.dart';
+import '../../../activity/presentation/widgets/activity_card.dart';
+import '../../../activity/domain/entities/activity_item.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard_group_tile.dart';
@@ -16,6 +19,8 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardProvider);
+    final favoriteSlugsAsync = ref.watch(favoriteSlugsNotifierProvider);
+    final favoriteActivityPreviewAsync = ref.watch(favoritesActivityPreviewProvider);
 
     return Scaffold(
       body: dashboardAsync.when(
@@ -25,6 +30,8 @@ class DashboardPage extends ConsumerWidget {
           onRefresh: () {
             // ignore: unused_result
             ref.refresh(dashboardProvider);
+            // ignore: unused_result
+            ref.refresh(favoritesActivityProvider);
             return Future.value();
           },
           child: SingleChildScrollView(
@@ -105,6 +112,11 @@ class DashboardPage extends ConsumerWidget {
                     children: [
                       // Favorites shortcut
                       _FavoritesCard(ref: ref),
+                      const SizedBox(height: 12),
+                      _FavoritesActivitySection(
+                        slugsAsync: favoriteSlugsAsync,
+                        activityAsync: favoriteActivityPreviewAsync,
+                      ),
                       const SizedBox(height: 20),
                       // Stats Section
                       Text(
@@ -395,6 +407,97 @@ class _FavoritesCard extends ConsumerWidget {
               const Icon(Icons.chevron_right),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FavoritesActivitySection extends StatelessWidget {
+  const _FavoritesActivitySection({
+    required this.slugsAsync,
+    required this.activityAsync,
+  });
+
+  final AsyncValue<List<String>> slugsAsync;
+  final AsyncValue<List<ActivityItem>> activityAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Activité de mes favoris',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => context.push('/favorites/activity'),
+                  child: const Text('Voir tout'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            slugsAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: LinearProgressIndicator(minHeight: 2),
+              ),
+              error: (_, __) => Text(
+                'Impossible de charger l\'activité.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              data: (slugs) {
+                if (slugs.isEmpty) {
+                  return Text(
+                    'Ajoutez des députés à vos favoris pour suivre leur activité.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  );
+                }
+
+                return activityAsync.when(
+                  loading: () => const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: LinearProgressIndicator(minHeight: 2),
+                  ),
+                  error: (_, __) => Text(
+                    'Impossible de charger l\'activité.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  data: (items) {
+                    if (items.isEmpty) {
+                      return Text(
+                        'Aucune activité récente trouvée.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      );
+                    }
+
+                    return Column(
+                      children: items.take(5).map((item) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: ActivityCard(
+                            item: item,
+                            compact: true,
+                            onTap: () => context.push('/scrutins/${item.latestVote.scrutin.id}'),
+                          ),
+                        );
+                      }).toList(growable: false),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
