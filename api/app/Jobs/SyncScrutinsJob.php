@@ -3,23 +3,36 @@
 namespace App\Jobs;
 
 use App\Services\Clair\ClairApiClient;
+use App\Services\Sync\SyncStateService;
 
 class SyncScrutinsJob extends BaseSyncJob
 {
-    public function handle(ClairApiClient $client): void
+    public function handle(ClairApiClient $client, SyncStateService $syncStateService): void
     {
         $chamber = $this->chamber();
         $institutionId = $this->institutionIdForChamber($chamber);
+        $stateKey = 'last_scrutins_sync';
+        $stateValue = $syncStateService->get($stateKey);
+        $since = $this->parseStateDate($stateValue);
+        $runStartedAt = $this->nowStateValue();
 
-        $this->logInfo('Sync scrutins started', ['chamber' => $chamber]);
+        $this->logInfo('Sync scrutins started', ['chamber' => $chamber, 'since' => $stateValue]);
 
         $processed = 0;
 
-        foreach ($client->getScrutins($chamber) as $page => $items) {
+        $pages = $since === null
+            ? $client->getScrutins($chamber)
+            : $client->getUpdatedScrutins($since, $chamber);
+
+        foreach ($pages as $page => $items) {
             $rows = [];
 
             foreach ($items as $item) {
                 if (($item['chambre'] ?? null) !== $chamber) {
+                    continue;
+                }
+
+                if (! $this->isItemNewerThanSince($item, $since, ['updatedAt', 'sourceUpdatedAt', 'date', 'createdAt'])) {
                     continue;
                 }
 
@@ -77,6 +90,9 @@ class SyncScrutinsJob extends BaseSyncJob
             ]);
         }
 
+        $syncStateService->set($stateKey, $runStartedAt);
+
+        $this->logInfo(sprintf('Scrutins imported: %d', $processed), ['chamber' => $chamber]);
         $this->logInfo('Sync scrutins completed', ['chamber' => $chamber, 'processed' => $processed]);
     }
 }

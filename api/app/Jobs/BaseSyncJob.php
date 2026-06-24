@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use DateTimeInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -40,6 +42,56 @@ abstract class BaseSyncJob implements ShouldQueue
     protected function nowIso(): string
     {
         return now()->toDateTimeString();
+    }
+
+    protected function nowStateValue(): string
+    {
+        return now()->toIso8601String();
+    }
+
+    protected function parseStateDate(?string $value): ?Carbon
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     * @param  array<int, string>  $dateFields
+     */
+    protected function isItemNewerThanSince(array $item, ?DateTimeInterface $since, array $dateFields): bool
+    {
+        if ($since === null) {
+            return true;
+        }
+
+        $hasComparableField = false;
+
+        foreach ($dateFields as $field) {
+            $value = data_get($item, $field);
+            if (! is_string($value) || trim($value) === '') {
+                continue;
+            }
+
+            try {
+                $hasComparableField = true;
+                if (Carbon::parse($value)->gt($since)) {
+                    return true;
+                }
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        // Keep recent rows when no comparable timestamp exists in payload.
+        return ! $hasComparableField;
     }
 
     protected function nullableInt(mixed $value): ?int

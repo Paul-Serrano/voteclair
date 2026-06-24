@@ -3,21 +3,30 @@
 namespace App\Jobs;
 
 use App\Services\Clair\ClairApiClient;
+use App\Services\Sync\SyncStateService;
 use Illuminate\Support\Facades\DB;
 
 class SyncDeputiesJob extends BaseSyncJob
 {
-    public function handle(ClairApiClient $client): void
+    public function handle(ClairApiClient $client, SyncStateService $syncStateService): void
     {
         $chamber = $this->chamber();
         $institutionId = $this->institutionIdForChamber($chamber);
+        $stateKey = 'last_deputies_sync';
+        $stateValue = $syncStateService->get($stateKey);
+        $since = $this->parseStateDate($stateValue);
+        $runStartedAt = $this->nowStateValue();
 
-        $this->logInfo('Sync deputies started', ['chamber' => $chamber]);
+        $this->logInfo('Sync deputies started', ['chamber' => $chamber, 'since' => $stateValue]);
 
         $processed = 0;
         $skipped = 0;
 
-        foreach ($client->getDeputies($chamber) as $page => $items) {
+        $pages = $since === null
+            ? $client->getDeputies($chamber)
+            : $client->getUpdatedDeputies($since, $chamber);
+
+        foreach ($pages as $page => $items) {
             $groupById = DB::table('groups')->pluck('id', 'id')->all();
             $groupBySlug = DB::table('groups')
                 ->where('institution_id', $institutionId)
@@ -28,6 +37,10 @@ class SyncDeputiesJob extends BaseSyncJob
             $rows = [];
 
             foreach ($items as $item) {
+                if (! $this->isItemNewerThanSince($item, $since, ['updatedAt', 'sourceUpdatedAt', 'createdAt'])) {
+                    continue;
+                }
+
                 $circonscription = $item['circonscription'] ?? null;
                 if (is_array($circonscription) && ! empty($circonscription['id'])) {
                     $circonscriptions[(string) $circonscription['id']] = [
@@ -136,6 +149,8 @@ class SyncDeputiesJob extends BaseSyncJob
                 'processed' => $processed,
             ]);
         }
+
+        $syncStateService->set($stateKey, $runStartedAt);
 
         $this->logInfo('Sync deputies completed', [
             'chamber' => $chamber,

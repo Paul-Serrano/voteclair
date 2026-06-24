@@ -3,24 +3,37 @@
 namespace App\Jobs;
 
 use App\Services\Clair\ClairApiClient;
+use App\Services\Sync\SyncStateService;
 
 class SyncGroupsJob extends BaseSyncJob
 {
-    public function handle(ClairApiClient $client): void
+    public function handle(ClairApiClient $client, SyncStateService $syncStateService): void
     {
         $chamber = $this->chamber();
         $institutionId = $this->institutionIdForChamber($chamber);
+        $stateKey = 'last_groups_sync';
+        $stateValue = $syncStateService->get($stateKey);
+        $since = $this->parseStateDate($stateValue);
+        $runStartedAt = $this->nowStateValue();
 
         $this->seedInstitutions();
-        $this->logInfo('Sync groups started', ['chamber' => $chamber]);
+        $this->logInfo('Sync groups started', ['chamber' => $chamber, 'since' => $stateValue]);
 
         $processed = 0;
 
-        foreach ($client->getGroups($chamber) as $page => $items) {
+        $pages = $since === null
+            ? $client->getGroups($chamber)
+            : $client->getUpdatedGroups($since, $chamber);
+
+        foreach ($pages as $page => $items) {
             $rows = [];
 
             foreach ($items as $item) {
                 if (($item['chambre'] ?? null) !== $chamber) {
+                    continue;
+                }
+
+                if (! $this->isItemNewerThanSince($item, $since, ['updatedAt', 'sourceUpdatedAt', 'statsCalculatedAt', 'createdAt'])) {
                     continue;
                 }
 
@@ -88,6 +101,8 @@ class SyncGroupsJob extends BaseSyncJob
                 'processed' => $processed,
             ]);
         }
+
+        $syncStateService->set($stateKey, $runStartedAt);
 
         $this->logInfo('Sync groups completed', ['chamber' => $chamber, 'processed' => $processed]);
     }

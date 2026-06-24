@@ -3,15 +3,21 @@
 namespace App\Jobs;
 
 use App\Services\Clair\ClairApiClient;
+use App\Services\Sync\SyncStateService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class SyncVotesJob extends BaseSyncJob
 {
-    public function handle(ClairApiClient $client): void
+    public function handle(ClairApiClient $client, SyncStateService $syncStateService): void
     {
         $chamber = $this->chamber();
-        $this->logInfo('Sync votes started', ['chamber' => $chamber]);
+        $stateKey = 'last_votes_sync';
+        $stateValue = $syncStateService->get($stateKey);
+        $since = $this->parseStateDate($stateValue);
+        $runStartedAt = $this->nowStateValue();
+
+        $this->logInfo('Sync votes started', ['chamber' => $chamber, 'since' => $stateValue]);
 
         /** @var array<string, string> $deputyBySlug */
         $deputyBySlug = DB::table('deputies')->pluck('id', 'slug')->all();
@@ -29,19 +35,26 @@ class SyncVotesJob extends BaseSyncJob
 
         /** @var array<int, string> $scrutinIdByNumero */
         $scrutinIdByNumero = DB::table('scrutins')->pluck('id', 'numero')->all();
-        $numbers = array_map('intval', array_keys($scrutinIdByNumero));
-        rsort($numbers);
-
-        $limit = max(0, (int) env('CLAIR_SYNC_VOTES_LIMIT', 0));
-        if ($limit > 0) {
-            $numbers = array_slice($numbers, 0, $limit);
-        }
 
         $processed = 0;
         $unknownDeputies = 0;
         $unknownScrutins = 0;
 
-        foreach ($client->getVotes($numbers) as $numero => $items) {
+        if ($since === null) {
+            $numbers = array_map('intval', array_keys($scrutinIdByNumero));
+            rsort($numbers);
+
+            $limit = max(0, (int) env('CLAIR_SYNC_VOTES_LIMIT', 0));
+            if ($limit > 0) {
+                $numbers = array_slice($numbers, 0, $limit);
+            }
+
+            $votesPages = $client->getVotes($numbers);
+        } else {
+            $votesPages = $client->getUpdatedVotes($since, $chamber);
+        }
+
+        foreach ($votesPages as $numero => $items) {
             $rows = [];
 
             foreach ($items as $item) {
@@ -100,6 +113,8 @@ class SyncVotesJob extends BaseSyncJob
             'unknown_deputies' => $unknownDeputies,
             'unknown_scrutins' => $unknownScrutins,
         ]);
+        $syncStateService->set($stateKey, $runStartedAt);
+        $this->logInfo(sprintf('Votes imported: %d', $processed), ['chamber' => $chamber]);
         $this->logInfo('Sync completed', ['chamber' => $chamber, 'processed_votes' => $processed]);
     }
 

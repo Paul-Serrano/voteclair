@@ -7,6 +7,7 @@ use App\Jobs\SyncGroupsJob;
 use App\Jobs\SyncScrutinsJob;
 use App\Jobs\SyncVotesJob;
 use App\Services\Clair\ClairApiClient;
+use App\Services\Sync\SyncStateService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Bus;
@@ -77,6 +78,20 @@ class SyncJobsTest extends TestCase
         $this->assertStringContainsString('0 3 * * *', $output);
     }
 
+    public function test_sync_status_command_displays_never_when_state_is_missing(): void
+    {
+        $this->artisan('voteclair:sync-status')
+            ->expectsOutput('Groups sync :')
+            ->expectsOutput('never')
+            ->expectsOutput('Deputies sync :')
+            ->expectsOutput('never')
+            ->expectsOutput('Scrutins sync :')
+            ->expectsOutput('never')
+            ->expectsOutput('Votes sync :')
+            ->expectsOutput('never')
+            ->assertSuccessful();
+    }
+
     public function test_sync_groups_job_is_idempotent_and_seeds_institutions(): void
     {
         Http::fake([
@@ -137,9 +152,11 @@ class SyncJobsTest extends TestCase
 
         $job = new SyncGroupsJob();
         $client = app(ClairApiClient::class);
+        $state = app(SyncStateService::class);
 
-        $job->handle($client);
-        $job->handle($client);
+        $job->handle($client, $state);
+        $state->set('last_groups_sync', '2026-06-20T12:00:00Z');
+        $job->handle($client, $state);
 
         $this->assertDatabaseCount('institutions', 3);
         $this->assertDatabaseCount('groups', 1);
@@ -150,6 +167,7 @@ class SyncJobsTest extends TestCase
             'couleur' => '#654321',
             'stats_membres_actifs' => 22,
         ]);
+        $this->assertNotNull($state->get('last_groups_sync'));
     }
 
     public function test_sync_groups_job_logs_progress_context_on_voteclair_channel(): void
@@ -194,7 +212,7 @@ class SyncJobsTest extends TestCase
             ->with('voteclair')
             ->andReturn($logger);
 
-        (new SyncGroupsJob())->handle(app(ClairApiClient::class));
+        (new SyncGroupsJob())->handle(app(ClairApiClient::class), app(SyncStateService::class));
     }
 
     public function test_sync_deputies_job_upserts_deputies_and_circonscriptions(): void
@@ -276,9 +294,10 @@ class SyncJobsTest extends TestCase
 
         $job = new SyncDeputiesJob();
         $client = app(ClairApiClient::class);
+        $state = app(SyncStateService::class);
 
-        $job->handle($client);
-        $job->handle($client);
+        $job->handle($client, $state);
+        $job->handle($client, $state);
 
         $this->assertDatabaseCount('circonscriptions', 1);
         $this->assertDatabaseCount('deputies', 1);
@@ -325,7 +344,7 @@ class SyncJobsTest extends TestCase
             ], 200),
         ]);
 
-        (new SyncDeputiesJob())->handle(app(ClairApiClient::class));
+        (new SyncDeputiesJob())->handle(app(ClairApiClient::class), app(SyncStateService::class));
 
         $this->assertDatabaseCount('deputies', 1);
         $this->assertDatabaseHas('deputies', [
@@ -347,6 +366,7 @@ class SyncJobsTest extends TestCase
                         'numero' => 7407,
                         'chambre' => 'assemblee',
                         'date' => '2026-06-16T00:00:00.000Z',
+                        'updatedAt' => '2026-06-16T00:00:00.000Z',
                         'titre' => 'Scrutin test',
                         'sort' => 'adopte',
                         'nombreVotants' => 10,
@@ -359,6 +379,7 @@ class SyncJobsTest extends TestCase
                         'numero' => 7408,
                         'chambre' => 'assemblee',
                         'date' => '2026-06-17T00:00:00.000Z',
+                        'updatedAt' => '2026-06-17T00:00:00.000Z',
                         'titre' => 'Scrutin sans sort reconnu',
                         'sort' => 'retire',
                     ],
@@ -369,6 +390,7 @@ class SyncJobsTest extends TestCase
                         'numero' => 7407,
                         'chambre' => 'assemblee',
                         'date' => '2026-06-16T00:00:00.000Z',
+                        'updatedAt' => '2026-06-18T00:00:00.000Z',
                         'titre' => 'Scrutin test (maj)',
                         'sort' => 'REJETE',
                         'nombreVotants' => 12,
@@ -381,6 +403,7 @@ class SyncJobsTest extends TestCase
                         'numero' => 7408,
                         'chambre' => 'assemblee',
                         'date' => '2026-06-17T00:00:00.000Z',
+                        'updatedAt' => '2026-06-17T00:00:00.000Z',
                         'titre' => 'Scrutin sans sort reconnu',
                         'sort' => 'retire',
                     ],
@@ -389,9 +412,11 @@ class SyncJobsTest extends TestCase
 
         $job = new SyncScrutinsJob();
         $client = app(ClairApiClient::class);
+        $state = app(SyncStateService::class);
 
-        $job->handle($client);
-        $job->handle($client);
+        $job->handle($client, $state);
+        $state->set('last_scrutins_sync', '2026-06-17T12:00:00Z');
+        $job->handle($client, $state);
 
         $this->assertDatabaseCount('scrutins', 2);
         $this->assertDatabaseHas('scrutins', [
@@ -442,9 +467,11 @@ class SyncJobsTest extends TestCase
 
         $job = new SyncVotesJob();
         $client = app(ClairApiClient::class);
+        $state = app(SyncStateService::class);
 
-        $job->handle($client);
-        $job->handle($client);
+        $job->handle($client, $state);
+        DB::table('sync_states')->where('key', 'last_votes_sync')->delete();
+        $job->handle($client, $state);
 
         $this->assertDatabaseCount('votes', 1);
         $this->assertDatabaseHas('votes', [
@@ -494,7 +521,7 @@ class SyncJobsTest extends TestCase
             ], 200),
         ]);
 
-        (new SyncVotesJob())->handle(app(ClairApiClient::class));
+        (new SyncVotesJob())->handle(app(ClairApiClient::class), app(SyncStateService::class));
 
         $this->assertDatabaseCount('votes', 1);
         $this->assertDatabaseHas('votes', [
@@ -556,7 +583,7 @@ class SyncJobsTest extends TestCase
             '*/api/v1/scrutins/10' => Http::response(['data' => []], 200),
         ]);
 
-        (new SyncVotesJob())->handle(app(ClairApiClient::class));
+        (new SyncVotesJob())->handle(app(ClairApiClient::class), app(SyncStateService::class));
 
         $recorded = Http::recorded();
         $this->assertGreaterThanOrEqual(2, $recorded->count());
@@ -578,6 +605,245 @@ class SyncJobsTest extends TestCase
             'deputy_id' => 'dep-1',
             'position' => 'POUR',
         ]);
+        $this->assertNotNull(app(SyncStateService::class)->get('last_votes_sync'));
+    }
+
+    public function test_sync_state_is_not_updated_when_job_fails(): void
+    {
+        putenv('CLAIR_API_MAX_ATTEMPTS=1');
+        $_ENV['CLAIR_API_MAX_ATTEMPTS'] = '1';
+        putenv('CLAIR_API_BACKOFF_MS=0');
+        $_ENV['CLAIR_API_BACKOFF_MS'] = '0';
+
+        Http::fake([
+            '*/api/v1/groupes*' => Http::response(['message' => 'Server error'], 500),
+        ]);
+
+        $state = app(SyncStateService::class);
+
+        try {
+            (new SyncGroupsJob())->handle(app(ClairApiClient::class), $state);
+            $this->fail('Expected a RuntimeException to be thrown.');
+        } catch (RuntimeException) {
+            $this->assertNull($state->get('last_groups_sync'));
+        }
+    }
+
+    public function test_clair_api_client_get_updated_votes_only_fetches_newer_scrutins(): void
+    {
+        putenv('CLAIR_API_THROTTLE_MS=0');
+        $_ENV['CLAIR_API_THROTTLE_MS'] = '0';
+        putenv('CLAIR_API_INCREMENTAL_RECENT_PAGES=2');
+        $_ENV['CLAIR_API_INCREMENTAL_RECENT_PAGES'] = '2';
+
+        Http::fake([
+            '*/api/v1/scrutins*' => Http::response([
+                [
+                    'id' => 'scr-old',
+                    'numero' => 100,
+                    'date' => '2026-06-10T00:00:00.000Z',
+                ],
+                [
+                    'id' => 'scr-new',
+                    'numero' => 101,
+                    'date' => '2026-06-20T00:00:00.000Z',
+                ],
+            ], 200),
+            '*/api/v1/scrutins/101' => Http::response([
+                'data' => [
+                    'id' => 'scr-new',
+                    'numero' => 101,
+                    'votesByPosition' => [],
+                ],
+            ], 200),
+        ]);
+
+        $pages = iterator_to_array(app(ClairApiClient::class)->getUpdatedVotes(new \DateTimeImmutable('2026-06-15T00:00:00Z')));
+
+        Http::assertSent(function ($request): bool {
+            return str_contains($request->url(), '/api/v1/scrutins/101');
+        });
+        Http::assertNotSent(function ($request): bool {
+            return str_contains($request->url(), '/api/v1/scrutins/100');
+        });
+        $this->assertCount(1, $pages);
+    }
+
+    public function test_sync_groups_job_incremental_filters_by_updated_at(): void
+    {
+        $state = app(SyncStateService::class);
+        $state->set('last_groups_sync', '2026-06-15T00:00:00Z');
+
+        Http::fake([
+            '*/api/v1/groupes*' => Http::response([
+                [
+                    'id' => 'g-old',
+                    'slug' => 'old-group',
+                    'nom' => 'Old Group',
+                    'nomComplet' => 'Old Group',
+                    'couleur' => '#111111',
+                    'position' => 'centre',
+                    'ordre' => 1,
+                    'actif' => true,
+                    'chambre' => 'assemblee',
+                    'sourceId' => 'PO-OLD',
+                    'updatedAt' => '2026-06-10T00:00:00.000Z',
+                ],
+                [
+                    'id' => 'g-new',
+                    'slug' => 'new-group',
+                    'nom' => 'New Group',
+                    'nomComplet' => 'New Group',
+                    'couleur' => '#222222',
+                    'position' => 'centre',
+                    'ordre' => 2,
+                    'actif' => true,
+                    'chambre' => 'assemblee',
+                    'sourceId' => 'PO-NEW',
+                    'updatedAt' => '2026-06-20T00:00:00.000Z',
+                ],
+            ], 200),
+        ]);
+
+        (new SyncGroupsJob())->handle(app(ClairApiClient::class), $state);
+
+        $this->assertDatabaseCount('groups', 1);
+        $this->assertDatabaseHas('groups', [
+            'id' => 'g-new',
+            'slug' => 'new-group',
+        ]);
+        $this->assertDatabaseMissing('groups', [
+            'id' => 'g-old',
+        ]);
+    }
+
+    public function test_sync_deputies_job_incremental_filters_by_source_updated_at(): void
+    {
+        $this->seedInstitutions();
+        $this->seedGroup();
+
+        $state = app(SyncStateService::class);
+        $state->set('last_deputies_sync', '2026-06-15T00:00:00Z');
+
+        Http::fake([
+            '*/api/v1/deputes*' => Http::response([
+                [
+                    'id' => 'dep-old',
+                    'groupeId' => 'g-1',
+                    'sourceId' => '800001',
+                    'slug' => 'deputy-old',
+                    'nom' => 'Old',
+                    'prenom' => 'Deputy',
+                    'sourceUpdatedAt' => '2026-06-10T00:00:00.000Z',
+                ],
+                [
+                    'id' => 'dep-new',
+                    'groupeId' => 'g-1',
+                    'sourceId' => '800002',
+                    'slug' => 'deputy-new',
+                    'nom' => 'New',
+                    'prenom' => 'Deputy',
+                    'sourceUpdatedAt' => '2026-06-20T00:00:00.000Z',
+                ],
+            ], 200),
+        ]);
+
+        (new SyncDeputiesJob())->handle(app(ClairApiClient::class), $state);
+
+        $this->assertDatabaseCount('deputies', 1);
+        $this->assertDatabaseHas('deputies', [
+            'id' => 'dep-new',
+            'slug' => 'deputy-new',
+            'source_id' => '800002',
+        ]);
+        $this->assertDatabaseMissing('deputies', [
+            'id' => 'dep-old',
+        ]);
+    }
+
+    public function test_sync_scrutins_job_incremental_filters_by_date_when_updated_at_is_missing(): void
+    {
+        $this->seedInstitutions();
+
+        $state = app(SyncStateService::class);
+        $state->set('last_scrutins_sync', '2026-06-15T00:00:00Z');
+
+        Http::fake([
+            '*/api/v1/scrutins*' => Http::response([
+                [
+                    'id' => 'scr-old',
+                    'numero' => 8001,
+                    'chambre' => 'assemblee',
+                    'date' => '2026-06-10T00:00:00.000Z',
+                    'titre' => 'Old scrutin',
+                    'sort' => 'adopte',
+                ],
+                [
+                    'id' => 'scr-new',
+                    'numero' => 8002,
+                    'chambre' => 'assemblee',
+                    'date' => '2026-06-20T00:00:00.000Z',
+                    'titre' => 'New scrutin',
+                    'sort' => 'rejete',
+                ],
+            ], 200),
+        ]);
+
+        (new SyncScrutinsJob())->handle(app(ClairApiClient::class), $state);
+
+        $this->assertDatabaseCount('scrutins', 1);
+        $this->assertDatabaseHas('scrutins', [
+            'id' => 'scr-new',
+            'numero' => 8002,
+        ]);
+        $this->assertDatabaseMissing('scrutins', [
+            'id' => 'scr-old',
+        ]);
+    }
+
+    public function test_sync_scrutins_state_is_not_updated_when_job_fails(): void
+    {
+        putenv('CLAIR_API_MAX_ATTEMPTS=1');
+        $_ENV['CLAIR_API_MAX_ATTEMPTS'] = '1';
+        putenv('CLAIR_API_BACKOFF_MS=0');
+        $_ENV['CLAIR_API_BACKOFF_MS'] = '0';
+
+        Http::fake([
+            '*/api/v1/scrutins*' => Http::response(['message' => 'Server error'], 500),
+        ]);
+
+        $state = app(SyncStateService::class);
+
+        try {
+            (new SyncScrutinsJob())->handle(app(ClairApiClient::class), $state);
+            $this->fail('Expected a RuntimeException to be thrown.');
+        } catch (RuntimeException) {
+            $this->assertNull($state->get('last_scrutins_sync'));
+        }
+    }
+
+    public function test_sync_votes_state_is_not_updated_when_job_fails(): void
+    {
+        $this->seedScrutin();
+        $this->seedDeputy();
+
+        putenv('CLAIR_API_MAX_ATTEMPTS=1');
+        $_ENV['CLAIR_API_MAX_ATTEMPTS'] = '1';
+        putenv('CLAIR_API_BACKOFF_MS=0');
+        $_ENV['CLAIR_API_BACKOFF_MS'] = '0';
+
+        Http::fake([
+            '*/api/v1/scrutins/7407' => Http::response(['message' => 'Server error'], 500),
+        ]);
+
+        $state = app(SyncStateService::class);
+
+        try {
+            (new SyncVotesJob())->handle(app(ClairApiClient::class), $state);
+            $this->fail('Expected a RuntimeException to be thrown.');
+        } catch (RuntimeException) {
+            $this->assertNull($state->get('last_votes_sync'));
+        }
     }
 
     public function test_clair_api_client_retries_rate_limited_requests(): void
@@ -661,7 +927,7 @@ class SyncJobsTest extends TestCase
     {
         Schema::disableForeignKeyConstraints();
 
-        foreach (['votes', 'scrutins', 'deputies', 'circonscriptions', 'groups', 'institutions'] as $table) {
+        foreach (['votes', 'scrutins', 'deputies', 'circonscriptions', 'groups', 'institutions', 'sync_states'] as $table) {
             Schema::dropIfExists($table);
         }
 
@@ -775,6 +1041,13 @@ class SyncJobsTest extends TestCase
             $table->boolean('delegated')->default(false);
             $table->timestamps();
             $table->unique(['scrutin_id', 'deputy_id']);
+        });
+
+        Schema::create('sync_states', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('key', 100)->unique();
+            $table->text('value')->nullable();
+            $table->timestamps();
         });
     }
 

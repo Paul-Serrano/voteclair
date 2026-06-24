@@ -2,9 +2,11 @@
 
 namespace App\Services\Clair;
 
+use DateTimeInterface;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -37,6 +39,21 @@ class ClairApiClient
     /**
      * @return \Generator<int, array<int, array<string, mixed>>>
      */
+    public function getUpdatedGroups(DateTimeInterface $since, string $chamber = 'assemblee'): \Generator
+    {
+        yield from $this->paginate(
+            '/api/v1/groupes',
+            [
+                'chambre' => $chamber,
+                'updatedSince' => $since->format(DATE_ATOM),
+            ],
+            max(1, (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5)),
+        );
+    }
+
+    /**
+     * @return \Generator<int, array<int, array<string, mixed>>>
+     */
     public function getDeputies(string $chamber = 'assemblee'): \Generator
     {
         yield from $this->paginate('/api/v1/deputes', ['chambre' => $chamber]);
@@ -45,9 +62,39 @@ class ClairApiClient
     /**
      * @return \Generator<int, array<int, array<string, mixed>>>
      */
+    public function getUpdatedDeputies(DateTimeInterface $since, string $chamber = 'assemblee'): \Generator
+    {
+        yield from $this->paginate(
+            '/api/v1/deputes',
+            [
+                'chambre' => $chamber,
+                'updatedSince' => $since->format(DATE_ATOM),
+            ],
+            max(1, (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5)),
+        );
+    }
+
+    /**
+     * @return \Generator<int, array<int, array<string, mixed>>>
+     */
     public function getScrutins(string $chamber = 'assemblee'): \Generator
     {
         yield from $this->paginate('/api/v1/scrutins', ['chambre' => $chamber]);
+    }
+
+    /**
+     * @return \Generator<int, array<int, array<string, mixed>>>
+     */
+    public function getUpdatedScrutins(DateTimeInterface $since, string $chamber = 'assemblee'): \Generator
+    {
+        yield from $this->paginate(
+            '/api/v1/scrutins',
+            [
+                'chambre' => $chamber,
+                'updatedSince' => $since->format(DATE_ATOM),
+            ],
+            max(1, (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5)),
+        );
     }
 
     /**
@@ -63,15 +110,57 @@ class ClairApiClient
     }
 
     /**
+     * @return \Generator<int, array<int, array<string, mixed>>>
+     */
+    public function getUpdatedVotes(DateTimeInterface $since, string $chamber = 'assemblee'): \Generator
+    {
+        $numbers = [];
+
+        foreach (
+            $this->paginate(
+                '/api/v1/scrutins',
+                [
+                    'chambre' => $chamber,
+                    'updatedSince' => $since->format(DATE_ATOM),
+                ],
+                max(1, (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5)),
+            ) as $items
+        ) {
+            foreach ($items as $item) {
+                $numero = (int) ($item['numero'] ?? 0);
+                if ($numero <= 0) {
+                    continue;
+                }
+
+                if (! $this->isItemUpdatedSince($item, $since, ['updatedAt', 'sourceUpdatedAt', 'date', 'createdAt'])) {
+                    continue;
+                }
+
+                $numbers[$numero] = true;
+            }
+        }
+
+        if ($numbers === []) {
+            return;
+        }
+
+        krsort($numbers, SORT_NUMERIC);
+        yield from $this->getVotes(array_keys($numbers));
+    }
+
+    /**
      * @param  array<string, mixed>  $query
      * @return \Generator<int, array<int, array<string, mixed>>>
      */
-    private function paginate(string $path, array $query = []): \Generator
+    private function paginate(string $path, array $query = [], ?int $maxPagesOverride = null): \Generator
     {
         $pageParam = (string) env('CLAIR_API_PAGE_PARAM', 'page');
         $limitParam = (string) env('CLAIR_API_LIMIT_PARAM', 'limit');
         $pageSize = max(1, (int) env('CLAIR_API_PAGE_SIZE', 100));
-        $maxPages = max(1, (int) env('CLAIR_API_MAX_PAGES', 500));
+        $defaultMaxPages = max(1, (int) env('CLAIR_API_MAX_PAGES', 500));
+        $maxPages = $maxPagesOverride === null
+            ? $defaultMaxPages
+            : max(1, min($defaultMaxPages, $maxPagesOverride));
         $seenSignatures = [];
 
         for ($page = 1; $page <= $maxPages; $page++) {
@@ -275,5 +364,32 @@ class ClairApiClient
         }
 
         return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     * @param  array<int, string>  $dateFields
+     */
+    private function isItemUpdatedSince(array $item, DateTimeInterface $since, array $dateFields): bool
+    {
+        $hasComparableField = false;
+
+        foreach ($dateFields as $field) {
+            $value = data_get($item, $field);
+            if (! is_string($value) || trim($value) === '') {
+                continue;
+            }
+
+            try {
+                $hasComparableField = true;
+                if (Carbon::parse($value)->gt($since)) {
+                    return true;
+                }
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return ! $hasComparableField;
     }
 }
