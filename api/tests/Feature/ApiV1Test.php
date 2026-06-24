@@ -164,15 +164,46 @@ class ApiV1Test extends TestCase
             ->assertJsonPath('data.stats.loyaute', 84);
     }
 
-    public function test_deputy_votes_returns_paginated_votes_sorted_by_scrutin_date_desc(): void
+    public function test_deputy_votes_returns_paginated_votes_sorted_by_scrutin_numero_desc(): void
     {
+        DB::table('scrutins')->insert([
+            'id' => 'f0f0f0f0-f0f0-4f0f-8f0f-f0f0f0f0f0f0',
+            'institution_id' => 'inst-an',
+            'numero' => 999,
+            'date' => '2020-01-01 00:00:00',
+            'titre' => 'Scrutin test numero eleve',
+            'sort' => 'ADOPTE',
+            'nombre_votants' => 0,
+            'nombre_pour' => 0,
+            'nombre_contre' => 0,
+            'nombre_abstention' => 0,
+            'demandeur_texte' => null,
+            'source_url' => null,
+            'dossier_titre' => null,
+            'dossier_url' => null,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('votes')->insert([
+            'scrutin_id' => 'f0f0f0f0-f0f0-4f0f-8f0f-f0f0f0f0f0f0',
+            'deputy_id' => 'dep-1',
+            'position' => 'POUR',
+            'delegated' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $response = $this->getJson('/api/deputies/jean-dupont/votes');
 
         $response
             ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonPath('data.0.scrutin.numero', 101)
-            ->assertJsonPath('data.1.scrutin.numero', 100)
+            ->assertJsonCount(3, 'data')
+            ->assertJsonPath('data.0.scrutin.numero', 999)
+            ->assertJsonPath('data.1.scrutin.numero', 101)
+            ->assertJsonPath('data.2.scrutin.numero', 100)
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -225,6 +256,38 @@ class ApiV1Test extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
             ->assertJsonPath('data.0.titre', 'Loi Climat');
+    }
+
+    public function test_scrutins_index_sorts_by_numero_desc(): void
+    {
+        DB::table('scrutins')->insert([
+            'id' => 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+            'institution_id' => 'inst-an',
+            'numero' => 999,
+            'date' => '2020-01-01 00:00:00',
+            'titre' => 'Ancien scrutin avec numero eleve',
+            'sort' => 'ADOPTE',
+            'nombre_votants' => 0,
+            'nombre_pour' => 0,
+            'nombre_contre' => 0,
+            'nombre_abstention' => 0,
+            'demandeur_texte' => null,
+            'source_url' => null,
+            'dossier_titre' => null,
+            'dossier_url' => null,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/scrutins');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.0.numero', 999)
+            ->assertJsonPath('data.1.numero', 101)
+            ->assertJsonPath('data.2.numero', 100);
     }
 
     public function test_scrutin_show_returns_single_scrutin_resource(): void
@@ -303,6 +366,59 @@ class ApiV1Test extends TestCase
             ->assertOk()
             ->assertJsonPath('deputies.0.slug', 'jean-dupont')
             ->assertJsonPath('deputies.0.group', 'Centre');
+    }
+
+    public function test_search_scrutins_are_sorted_by_numero_desc(): void
+    {
+        DB::table('scrutins')->insert([
+            [
+                'id' => 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+                'institution_id' => 'inst-an',
+                'numero' => 250,
+                'date' => '2019-01-01 00:00:00',
+                'titre' => 'Texte commun alpha',
+                'sort' => 'ADOPTE',
+                'nombre_votants' => 0,
+                'nombre_pour' => 0,
+                'nombre_contre' => 0,
+                'nombre_abstention' => 0,
+                'demandeur_texte' => null,
+                'source_url' => null,
+                'dossier_titre' => null,
+                'dossier_url' => null,
+                'resume_ia' => 'Resume alpha',
+                'last_synced_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+                'institution_id' => 'inst-an',
+                'numero' => 150,
+                'date' => '2027-01-01 00:00:00',
+                'titre' => 'Texte commun beta',
+                'sort' => 'REJETE',
+                'nombre_votants' => 0,
+                'nombre_pour' => 0,
+                'nombre_contre' => 0,
+                'nombre_abstention' => 0,
+                'demandeur_texte' => null,
+                'source_url' => null,
+                'dossier_titre' => null,
+                'dossier_url' => null,
+                'resume_ia' => 'Resume beta',
+                'last_synced_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $response = $this->getJson('/api/search?q=Texte commun');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('scrutins.0.titre', 'Texte commun alpha')
+            ->assertJsonPath('scrutins.1.titre', 'Texte commun beta');
     }
 
     private function resetSchema(): void

@@ -98,7 +98,7 @@ class SearchController extends Controller
                 $q->whereRaw('LOWER(titre) LIKE ?', [$lowerLike])
                     ->orWhereRaw('LOWER(resume_ia) LIKE ?', [$lowerLike]);
             })
-            ->orderByDesc('date')
+            ->orderByDesc('numero')
             ->limit(20)
             ->get();
 

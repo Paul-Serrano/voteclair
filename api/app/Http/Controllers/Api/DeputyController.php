@@ -71,7 +71,7 @@ class DeputyController extends Controller
     #[Endpoint(
         operationId: 'deputies.votes',
         title: 'Lister les votes d\'un député',
-        description: 'Retourne les votes d\'un député, triés du scrutin le plus récent au plus ancien.'
+        description: 'Retourne les votes d\'un député, triés par numéro de scrutin décroissant.'
     )]
     #[PathParameter('deputy', 'Slug du député.', required: true, example: 'jean-dupont')]
     #[QueryParameter('page', 'Numéro de page de pagination.', required: false, example: 1)]
@@ -84,7 +84,7 @@ class DeputyController extends Controller
             ->join('scrutins', 'scrutins.id', '=', 'votes.scrutin_id')
             ->where('votes.deputy_id', $deputy->id)
             ->with('scrutin:id,numero,titre,date,sort')
-            ->orderByDesc('scrutins.date');
+            ->orderByDesc('scrutins.numero');
 
         return new VoteCollection($query->paginate());
     }

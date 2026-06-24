@@ -55,7 +55,7 @@ class ScrutinController extends Controller
             $query->whereDate('date', '<=', $to);
         }
 
-        $query->latest('date');
+        $query->orderByDesc('numero');
 
         return new ScrutinCollection($query->paginate());
     }
