@@ -81,10 +81,10 @@ class _FakeFindMyDeputyRepository implements FindMyDeputyRepository {
 }
 
 FindMyDeputyResult _sampleResult() {
-  return FindMyDeputyResult(
+  return const FindMyDeputyResult(
     postalCode: '75001',
-    institution: const FindMyDeputyInstitution(id: 'inst-an', nom: 'Assemblee nationale'),
-    circonscription: const FindMyDeputyCirconscription(id: 'cir-1', nom: 'Paris 1'),
+    institution: FindMyDeputyInstitution(id: 'inst-an', nom: 'Assemblee nationale'),
+    circonscription: FindMyDeputyCirconscription(id: 'cir-1', nom: 'Paris 1'),
     deputies: [
       FindMyDeputyDeputy(
         slug: 'jean-dupont',
@@ -95,9 +95,9 @@ FindMyDeputyResult _sampleResult() {
         statsPresence: 91,
         statsLoyaute: 84,
         statsParticipation: 123,
-        group: const FindMyDeputyGroup(slug: 'centre', nom: 'Centre', couleur: '#00AAFF'),
+        group: FindMyDeputyGroup(slug: 'centre', nom: 'Centre', couleur: '#00AAFF'),
         latestVotes: [
-          const FindMyDeputyVote(
+          FindMyDeputyVote(
             scrutinId: 'scr-1',
             position: 'POUR',
             delegated: false,
@@ -110,7 +110,7 @@ FindMyDeputyResult _sampleResult() {
               importanceScore: 110,
             ),
           ),
-          const FindMyDeputyVote(
+          FindMyDeputyVote(
             scrutinId: 'scr-2',
             position: 'CONTRE',
             delegated: false,
