@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/comparison/presentation/pages/comparison_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/activity/presentation/pages/favorites_activity_page.dart';
 import '../../features/deputies/presentation/deputies_list_page.dart';
@@ -31,6 +32,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/favorites/activity',
         name: 'favorites-activity',
         builder: (context, state) => const FavoritesActivityPage(),
+      ),
+      GoRoute(
+        path: '/compare',
+        name: 'compare-deputies',
+        builder: (context, state) => ComparisonPage(
+          initialLeftSlug: state.uri.queryParameters['left_slug'],
+          initialLeftPrenom: state.uri.queryParameters['left_prenom'],
+          initialLeftNom: state.uri.queryParameters['left_nom'],
+          initialLeftGroup: state.uri.queryParameters['left_group'],
+        ),
       ),
       GoRoute(
         path: '/deputies',

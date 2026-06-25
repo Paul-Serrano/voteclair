@@ -123,6 +123,25 @@ class _DetailsContent extends StatelessWidget {
         const SizedBox(height: 16),
         _StatsSection(deputy: deputy),
         const SizedBox(height: 16),
+        OutlinedButton.icon(
+          onPressed: () {
+            final uri = Uri(
+              path: '/compare',
+              queryParameters: {
+                'left_slug': deputy.slug,
+                'left_prenom': deputy.prenom,
+                'left_nom': deputy.nom,
+                if (deputy.groupName != null && deputy.groupName!.trim().isNotEmpty)
+                  'left_group': deputy.groupName!.trim(),
+              },
+            );
+
+            context.push(uri.toString());
+          },
+          icon: const Icon(Icons.compare_arrows),
+          label: const Text('Comparer ce depute'),
+        ),
+        const SizedBox(height: 12),
         FilledButton(
           onPressed: () => context.push('/deputies/${deputy.slug}/votes'),
           child: const Text('Voir les votes'),

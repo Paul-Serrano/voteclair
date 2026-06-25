@@ -124,6 +124,18 @@ class DashboardPage extends ConsumerWidget {
                         activityAsync: favoriteActivityPreviewAsync,
                       ),
                       const SizedBox(height: 12),
+                      Card(
+                        child: ListTile(
+                          onTap: () => context.push('/compare'),
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.compare_arrows),
+                          ),
+                          title: const Text('Comparer deux deputes'),
+                          subtitle: const Text('Visualisez accords et desaccords de vote.'),
+                          trailing: const Icon(Icons.chevron_right),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       _ImportantVotesSection(itemsAsync: importantVotesPreviewAsync),
                       const SizedBox(height: 20),
                       // Stats Section

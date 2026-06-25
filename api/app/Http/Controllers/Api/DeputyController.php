@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DeputyCollection;
+use App\Http\Resources\DeputyComparisonResource;
 use App\Http\Resources\DeputyResource;
 use App\Http\Resources\VoteCollection;
 use App\Models\Deputy;
 use App\Models\Vote;
+use App\Services\Deputies\DeputyComparisonService;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group as ApiGroup;
 use Dedoc\Scramble\Attributes\PathParameter;
@@ -19,6 +21,30 @@ use Illuminate\Support\Str;
 #[ApiGroup('Deputies', description: 'Députés et leurs votes', weight: 20)]
 class DeputyController extends Controller
 {
+    #[Endpoint(
+        operationId: 'deputies.compare',
+        title: 'Comparer deux députés',
+        description: 'Compare les comportements de vote de deux députés.'
+    )]
+    #[QueryParameter('left_slug', 'Slug du député A.', required: true, example: 'nadege-abomangoli')]
+    #[QueryParameter('right_slug', 'Slug du député B.', required: true, example: 'xavier-albertini')]
+    #[Response(200, 'Comparaison de députés.', type: 'object')]
+    #[Response(422, 'Paramètres invalides.', type: 'object')]
+    public function compare(Request $request, DeputyComparisonService $comparisonService): DeputyComparisonResource
+    {
+        $validated = $request->validate([
+            'left_slug' => ['required', 'string', 'exists:deputies,slug', 'different:right_slug'],
+            'right_slug' => ['required', 'string', 'exists:deputies,slug', 'different:left_slug'],
+        ]);
+
+        $left = Deputy::query()->where('slug', $validated['left_slug'])->firstOrFail();
+        $right = Deputy::query()->where('slug', $validated['right_slug'])->firstOrFail();
+
+        $result = $comparisonService->compare($left, $right);
+
+        return new DeputyComparisonResource($result);
+    }
+
     #[Endpoint(
         operationId: 'deputies.index',
         title: 'Lister les députés',

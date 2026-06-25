@@ -217,6 +217,310 @@ class ApiV1Test extends TestCase
             ]);
     }
 
+    public function test_deputies_compare_returns_stats_and_recent_differences(): void
+    {
+        DB::table('votes')->insert([
+            'scrutin_id' => 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+            'deputy_id' => 'dep-2',
+            'position' => 'CONTRE',
+            'delegated' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/deputies/compare?left_slug=jean-dupont&right_slug=marie-durand');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.left.slug', 'jean-dupont')
+            ->assertJsonPath('data.right.slug', 'marie-durand')
+            ->assertJsonPath('data.stats.common_votes', 2)
+            ->assertJsonPath('data.stats.agreements', 1)
+            ->assertJsonPath('data.stats.disagreements', 1)
+            ->assertJsonPath('data.stats.same_abstentions', 0)
+            ->assertJsonPath('data.stats.agreement_rate', 50)
+            ->assertJsonCount(2, 'data.recent_common_votes')
+            ->assertJsonCount(1, 'data.recent_differences')
+            ->assertJsonPath('data.recent_differences.0.scrutin_id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+            ->assertJsonPath('data.recent_differences.0.numero', 100)
+            ->assertJsonPath('data.recent_differences.0.left_vote', 'POUR')
+            ->assertJsonPath('data.recent_differences.0.right_vote', 'ABSTENTION')
+            ->assertJsonStructure([
+                'data' => [
+                    'left' => ['slug', 'nom', 'prenom'],
+                    'right' => ['slug', 'nom', 'prenom'],
+                    'stats' => [
+                        'common_votes',
+                        'agreements',
+                        'disagreements',
+                        'same_abstentions',
+                        'agreement_rate',
+                    ],
+                    'recent_common_votes' => [
+                        [
+                            'scrutin_id',
+                            'numero',
+                            'titre',
+                            'date',
+                            'scrutin_sort',
+                            'importance_score',
+                            'left_vote',
+                            'right_vote',
+                        ],
+                    ],
+                    'recent_differences' => [
+                        [
+                            'scrutin_id',
+                            'numero',
+                            'titre',
+                            'date',
+                            'scrutin_sort',
+                            'importance_score',
+                            'left_vote',
+                            'right_vote',
+                        ],
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_deputies_compare_returns_422_when_slug_is_invalid(): void
+    {
+        $response = $this->getJson('/api/deputies/compare?left_slug=unknown&right_slug=marie-durand');
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['left_slug']);
+    }
+
+    public function test_deputies_compare_preserves_requested_orientation_with_order_independent_cache(): void
+    {
+        $first = $this->getJson('/api/deputies/compare?left_slug=jean-dupont&right_slug=marie-durand');
+
+        $first
+            ->assertOk()
+            ->assertJsonPath('data.left.slug', 'jean-dupont')
+            ->assertJsonPath('data.right.slug', 'marie-durand')
+            ->assertJsonPath('data.recent_differences.0.left_vote', 'POUR')
+            ->assertJsonPath('data.recent_differences.0.right_vote', 'ABSTENTION');
+
+        $second = $this->getJson('/api/deputies/compare?left_slug=marie-durand&right_slug=jean-dupont');
+
+        $second
+            ->assertOk()
+            ->assertJsonPath('data.left.slug', 'marie-durand')
+            ->assertJsonPath('data.right.slug', 'jean-dupont')
+            ->assertJsonPath('data.stats.common_votes', 1)
+            ->assertJsonPath('data.stats.agreements', 0)
+            ->assertJsonPath('data.stats.disagreements', 1)
+            ->assertJsonPath('data.recent_differences.0.left_vote', 'ABSTENTION')
+            ->assertJsonPath('data.recent_differences.0.right_vote', 'POUR');
+    }
+
+    public function test_deputies_compare_returns_zero_stats_when_no_common_votes(): void
+    {
+        DB::table('deputies')->insert([
+            'id' => 'dep-3',
+            'institution_id' => 'inst-an',
+            'groupe_id' => 'grp-centre',
+            'circonscription_id' => null,
+            'source_id' => '841003',
+            'slug' => 'paul-martin',
+            'nom' => 'Martin',
+            'prenom' => 'Paul',
+            'profession' => null,
+            'photo_url' => null,
+            'actif' => true,
+            'stats_presence' => null,
+            'stats_loyaute' => null,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('scrutins')->insert([
+            'id' => '12121212-1212-4121-8121-121212121212',
+            'institution_id' => 'inst-an',
+            'numero' => 1200,
+            'date' => '2026-07-01 10:00:00',
+            'titre' => 'Scrutin hors intersection',
+            'sort' => 'ADOPTE',
+            'importance_score' => 0,
+            'nombre_votants' => 0,
+            'nombre_pour' => 0,
+            'nombre_contre' => 0,
+            'nombre_abstention' => 0,
+            'demandeur_texte' => null,
+            'source_url' => null,
+            'dossier_titre' => null,
+            'dossier_url' => null,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('votes')->insert([
+            'scrutin_id' => '12121212-1212-4121-8121-121212121212',
+            'deputy_id' => 'dep-3',
+            'position' => 'POUR',
+            'delegated' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/deputies/compare?left_slug=jean-dupont&right_slug=paul-martin');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.stats.common_votes', 0)
+            ->assertJsonPath('data.stats.agreements', 0)
+            ->assertJsonPath('data.stats.disagreements', 0)
+            ->assertJsonPath('data.stats.same_abstentions', 0)
+            ->assertJsonPath('data.stats.agreement_rate', 0)
+            ->assertJsonPath('data.recent_common_votes', [])
+            ->assertJsonPath('data.recent_differences', []);
+    }
+
+    public function test_deputies_compare_returns_100_percent_when_all_common_votes_agree(): void
+    {
+        DB::table('deputies')->insert([
+            'id' => 'dep-3',
+            'institution_id' => 'inst-an',
+            'groupe_id' => 'grp-centre',
+            'circonscription_id' => null,
+            'source_id' => '841003',
+            'slug' => 'paul-martin',
+            'nom' => 'Martin',
+            'prenom' => 'Paul',
+            'profession' => null,
+            'photo_url' => null,
+            'actif' => true,
+            'stats_presence' => null,
+            'stats_loyaute' => null,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('votes')->insert([
+            [
+                'scrutin_id' => 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                'deputy_id' => 'dep-3',
+                'position' => 'POUR',
+                'delegated' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'scrutin_id' => 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+                'deputy_id' => 'dep-3',
+                'position' => 'CONTRE',
+                'delegated' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        $response = $this->getJson('/api/deputies/compare?left_slug=jean-dupont&right_slug=paul-martin');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.stats.common_votes', 2)
+            ->assertJsonPath('data.stats.agreements', 2)
+            ->assertJsonPath('data.stats.disagreements', 0)
+            ->assertJsonPath('data.stats.agreement_rate', 100)
+            ->assertJsonCount(2, 'data.recent_common_votes')
+            ->assertJsonPath('data.recent_differences', []);
+    }
+
+    public function test_deputies_compare_limits_recent_common_votes_to_100_and_orders_by_recency(): void
+    {
+        DB::table('deputies')->insert([
+            'id' => 'dep-3',
+            'institution_id' => 'inst-an',
+            'groupe_id' => 'grp-centre',
+            'circonscription_id' => null,
+            'source_id' => '841003',
+            'slug' => 'paul-martin',
+            'nom' => 'Martin',
+            'prenom' => 'Paul',
+            'profession' => null,
+            'photo_url' => null,
+            'actif' => true,
+            'stats_presence' => null,
+            'stats_loyaute' => null,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $scrutins = [];
+        $votes = [];
+
+        for ($i = 0; $i < 105; $i++) {
+            $scrutinId = sprintf('77000000-0000-4000-8000-%012d', $i);
+            $numero = 2000 + $i;
+            $date = sprintf('2026-08-%02d 12:%02d:00', 1 + intdiv($i, 60), $i % 60);
+
+            $scrutins[] = [
+                'id' => $scrutinId,
+                'institution_id' => 'inst-an',
+                'numero' => $numero,
+                'date' => $date,
+                'titre' => 'Serie test '.$numero,
+                'sort' => 'ADOPTE',
+                'importance_score' => 0,
+                'nombre_votants' => 0,
+                'nombre_pour' => 0,
+                'nombre_contre' => 0,
+                'nombre_abstention' => 0,
+                'demandeur_texte' => null,
+                'source_url' => null,
+                'dossier_titre' => null,
+                'dossier_url' => null,
+                'resume_ia' => null,
+                'last_synced_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $votes[] = [
+                'scrutin_id' => $scrutinId,
+                'deputy_id' => 'dep-1',
+                'position' => 'POUR',
+                'delegated' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $votes[] = [
+                'scrutin_id' => $scrutinId,
+                'deputy_id' => 'dep-3',
+                'position' => 'POUR',
+                'delegated' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        DB::table('scrutins')->insert($scrutins);
+        DB::table('votes')->insert($votes);
+
+        $response = $this->getJson('/api/deputies/compare?left_slug=jean-dupont&right_slug=paul-martin');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.stats.common_votes', 105)
+            ->assertJsonCount(100, 'data.recent_common_votes')
+            ->assertJsonPath('data.recent_common_votes.0.numero', 2104)
+            ->assertJsonPath('data.recent_common_votes.99.numero', 2005)
+            ->assertJsonPath('data.recent_differences', []);
+    }
+
     public function test_scrutins_index_filters_by_sort_and_date_range(): void
     {
         $response = $this->getJson('/api/scrutins?sort=REJETE&from=2026-06-15&to=2026-06-30');

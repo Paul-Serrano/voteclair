@@ -13,6 +13,7 @@ Route::get('/dashboard', [DashboardController::class, 'index']);
 Route::get('/favorites/activity', [FavoriteActivityController::class, 'index']);
 
 Route::prefix('deputies')->group(function (): void {
+    Route::get('compare', [DeputyController::class, 'compare']);
     Route::get('/', [DeputyController::class, 'index']);
     Route::get('{deputy:slug}', [DeputyController::class, 'show']);
     Route::get('{deputy:slug}/votes', [DeputyController::class, 'votes']);
