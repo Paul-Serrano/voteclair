@@ -7,6 +7,7 @@ import '../../features/activity/presentation/pages/favorites_activity_page.dart'
 import '../../features/deputies/presentation/deputies_list_page.dart';
 import '../../features/deputies/presentation/pages/deputy_details_page.dart';
 import '../../features/deputies/presentation/pages/deputy_votes_page.dart';
+import '../../features/find_my_deputy/presentation/pages/find_my_deputy_page.dart';
 import '../../features/favorites/presentation/pages/favorites_page.dart';
 import '../../features/groups/presentation/groups_page.dart';
 import '../../features/groups/presentation/pages/groups_list_page.dart';
@@ -32,6 +33,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/favorites/activity',
         name: 'favorites-activity',
         builder: (context, state) => const FavoritesActivityPage(),
+      ),
+      GoRoute(
+        path: '/find-my-deputy',
+        name: 'find-my-deputy',
+        builder: (context, state) => const FindMyDeputyPage(),
       ),
       GoRoute(
         path: '/compare',

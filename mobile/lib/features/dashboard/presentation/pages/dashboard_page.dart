@@ -126,6 +126,18 @@ class DashboardPage extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Card(
                         child: ListTile(
+                          onTap: () => context.push('/find-my-deputy'),
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.local_post_office),
+                          ),
+                          title: const Text('Trouver mon député'),
+                          subtitle: const Text('Identifiez votre représentant avec votre code postal.'),
+                          trailing: const Icon(Icons.chevron_right),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Card(
+                        child: ListTile(
                           onTap: () => context.push('/compare'),
                           leading: const CircleAvatar(
                             child: Icon(Icons.compare_arrows),

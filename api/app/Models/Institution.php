@@ -40,4 +40,14 @@ class Institution extends Model
     {
         return $this->hasMany(Scrutin::class);
     }
+
+    public function circonscriptions(): HasMany
+    {
+        return $this->hasMany(Circonscription::class);
+    }
+
+    public function postalCodes(): HasMany
+    {
+        return $this->hasMany(PostalCode::class);
+    }
 }

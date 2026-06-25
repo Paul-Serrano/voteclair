@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -184,6 +185,255 @@ class ApiV1Test extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    public function test_find_my_deputy_returns_deputy_with_latest_votes(): void
+    {
+        $scrutins = [];
+        $votes = [];
+
+        for ($index = 0; $index < 3; $index++) {
+            $scrutinId = sprintf('55000000-0000-4000-8000-%012d', $index);
+            $numero = 200 + $index;
+
+            $scrutins[] = [
+                'id' => $scrutinId,
+                'institution_id' => 'inst-an',
+                'numero' => $numero,
+                'date' => sprintf('2026-06-%02d 12:00:00', 21 + $index),
+                'titre' => 'Scrutin postal '.$numero,
+                'sort' => 'ADOPTE',
+                'importance_score' => 90 + $index,
+                'nombre_votants' => 0,
+                'nombre_pour' => 0,
+                'nombre_contre' => 0,
+                'nombre_abstention' => 0,
+                'demandeur_texte' => null,
+                'source_url' => null,
+                'dossier_titre' => null,
+                'dossier_url' => null,
+                'resume_ia' => null,
+                'last_synced_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $votes[] = [
+                'scrutin_id' => $scrutinId,
+                'deputy_id' => 'dep-1',
+                'position' => $index === 0 ? 'POUR' : ($index === 1 ? 'CONTRE' : 'ABSTENTION'),
+                'delegated' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        DB::table('scrutins')->insert($scrutins);
+        DB::table('votes')->insert($votes);
+
+        $response = $this->getJson('/api/find-my-deputy?postal_code=13008');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('postal_code', '13008')
+            ->assertJsonPath('institution.slug', 'assemblee-nationale')
+            ->assertJsonPath('circonscription.nom', 'Paris 1')
+            ->assertJsonPath('deputies.0.slug', 'jean-dupont')
+            ->assertJsonPath('deputies.0.group.nom', 'Centre')
+            ->assertJsonCount(5, 'deputies.0.latest_votes')
+            ->assertJsonPath('deputies.0.latest_votes.0.scrutin.numero', 202)
+            ->assertJsonPath('deputies.0.latest_votes.0.position', 'ABSTENTION')
+            ->assertJsonPath('deputies.0.latest_votes.4.scrutin.numero', 100)
+            ->assertJsonStructure([
+                'postal_code',
+                'institution' => ['id', 'slug', 'nom', 'pays'],
+                'circonscription' => ['id', 'nom', 'departement', 'departement_name', 'numero'],
+                'deputies' => [
+                    [
+                        'slug',
+                        'prenom',
+                        'nom',
+                        'photo_url',
+                        'profession',
+                        'stats_presence',
+                        'stats_loyaute',
+                        'stats_participation',
+                        'group' => ['slug', 'nom', 'couleur'],
+                        'latest_votes' => [
+                            [
+                                'scrutin_id',
+                                'position',
+                                'delegated',
+                                'scrutin' => ['id', 'numero', 'titre', 'date', 'sort', 'importance_score'],
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_find_my_deputy_returns_404_when_postal_code_is_unknown(): void
+    {
+        $response = $this->getJson('/api/find-my-deputy?postal_code=99999');
+
+        $response->assertNotFound();
+    }
+
+    public function test_find_my_deputy_validates_postal_code_format(): void
+    {
+        $response = $this->getJson('/api/find-my-deputy?postal_code=1300');
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['postal_code']);
+    }
+
+    public function test_find_my_deputy_validates_institution_id_exists(): void
+    {
+        $response = $this->getJson('/api/find-my-deputy?postal_code=13008&institution_id=inst-unknown');
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['institution_id']);
+    }
+
+    public function test_find_my_deputy_can_filter_by_institution_id(): void
+    {
+        DB::table('institutions')->insert([
+            'id' => 'inst-senat',
+            'slug' => 'senat',
+            'nom' => 'Senat',
+            'pays' => 'France',
+            'actif' => true,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('groups')->insert([
+            'id' => 'grp-senat-centre',
+            'institution_id' => 'inst-senat',
+            'source_id' => 'POS',
+            'slug' => 'g-senat-centre',
+            'nom' => 'Centre Senat',
+            'nom_complet' => 'Groupe Centre Senat',
+            'couleur' => '#3355AA',
+            'logo_url' => null,
+            'position' => 'CENTRE',
+            'ordre' => 3,
+            'actif' => true,
+            'stats_membres_actifs' => 1,
+            'stats_presence_moyenne' => 45,
+            'stats_presence_solennel_moyenne' => 80,
+            'stats_loyaute_moyenne' => 82,
+            'stats_cohesion' => 75,
+            'stats_participation' => 1200,
+            'stats_votes_pour' => 700,
+            'stats_votes_contre' => 400,
+            'stats_votes_abstention' => 100,
+            'stats_votes_absent' => 0,
+            'stats_calculated_at' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('circonscriptions')->insert([
+            'id' => 'cir-senat-1',
+            'institution_id' => 'inst-senat',
+            'departement' => '75',
+            'departement_name' => 'Paris',
+            'numero' => 1,
+            'nom' => 'Paris Senat 1',
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('postal_codes')->insert([
+            'postal_code' => '13008',
+            'departement_code' => '75',
+            'institution_id' => 'inst-senat',
+            'circonscription_id' => 'cir-senat-1',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('deputies')->insert([
+            'id' => 'dep-senat-1',
+            'institution_id' => 'inst-senat',
+            'groupe_id' => 'grp-senat-centre',
+            'circonscription_id' => 'cir-senat-1',
+            'source_id' => '951001',
+            'slug' => 'alice-senat',
+            'nom' => 'Senat',
+            'prenom' => 'Alice',
+            'profession' => 'Juriste',
+            'photo_url' => null,
+            'actif' => true,
+            'stats_presence' => 88,
+            'stats_loyaute' => 91,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/find-my-deputy?postal_code=13008&institution_id=inst-senat');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('institution.slug', 'senat')
+            ->assertJsonPath('circonscription.id', 'cir-senat-1')
+            ->assertJsonPath('deputies.0.slug', 'alice-senat');
+    }
+
+    public function test_find_my_deputy_returns_404_when_no_active_deputy_for_matching_postal_code(): void
+    {
+        DB::table('circonscriptions')->insert([
+            'id' => 'cir-no-deputy',
+            'institution_id' => 'inst-an',
+            'departement' => '13',
+            'departement_name' => 'Bouches-du-Rhone',
+            'numero' => 5,
+            'nom' => 'Bouches-du-Rhone 5',
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('postal_codes')->insert([
+            'postal_code' => '13100',
+            'departement_code' => '13',
+            'institution_id' => 'inst-an',
+            'circonscription_id' => 'cir-no-deputy',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('deputies')->insert([
+            'id' => 'dep-inactive-1',
+            'institution_id' => 'inst-an',
+            'groupe_id' => 'grp-centre',
+            'circonscription_id' => 'cir-no-deputy',
+            'source_id' => '841099',
+            'slug' => 'paul-inactif',
+            'nom' => 'Inactif',
+            'prenom' => 'Paul',
+            'profession' => 'Consultant',
+            'photo_url' => null,
+            'actif' => false,
+            'stats_presence' => 0,
+            'stats_loyaute' => 0,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/find-my-deputy?postal_code=13100');
+
+        $response->assertNotFound();
     }
 
     public function test_deputy_votes_returns_paginated_votes_sorted_by_scrutin_numero_desc(): void
@@ -892,12 +1142,23 @@ class ApiV1Test extends TestCase
 
         Schema::create('circonscriptions', function (Blueprint $table): void {
             $table->string('id')->primary();
+            $table->string('institution_id')->nullable();
             $table->string('departement', 5);
             $table->string('departement_name')->nullable();
             $table->integer('numero');
             $table->string('nom');
             $table->timestamp('last_synced_at')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('postal_codes', function (Blueprint $table): void {
+            $table->bigIncrements('id');
+            $table->string('postal_code', 10);
+            $table->string('departement_code', 5);
+            $table->string('institution_id')->nullable();
+            $table->string('circonscription_id');
+            $table->timestamps();
+            $table->unique(['postal_code', 'institution_id']);
         });
 
         Schema::create('deputies', function (Blueprint $table): void {
@@ -1023,11 +1284,21 @@ class ApiV1Test extends TestCase
 
         DB::table('circonscriptions')->insert([
             'id' => 'cir-1',
+            'institution_id' => 'inst-an',
             'departement' => '75',
             'departement_name' => 'Paris',
             'numero' => 1,
             'nom' => 'Paris 1',
             'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('postal_codes')->insert([
+            'postal_code' => '13008',
+            'departement_code' => '75',
+            'institution_id' => 'inst-an',
+            'circonscription_id' => 'cir-1',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

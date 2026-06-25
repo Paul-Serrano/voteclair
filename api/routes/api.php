@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\FindMyDeputyController;
 use App\Http\Controllers\Api\DeputyController;
 use App\Http\Controllers\Api\FavoriteActivityController;
 use App\Http\Controllers\Api\GroupController;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [DashboardController::class, 'index']);
 Route::get('/favorites/activity', [FavoriteActivityController::class, 'index']);
+Route::get('/find-my-deputy', [FindMyDeputyController::class, 'index']);
 
 Route::prefix('deputies')->group(function (): void {
     Route::get('compare', [DeputyController::class, 'compare']);
