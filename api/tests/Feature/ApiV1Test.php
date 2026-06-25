@@ -258,6 +258,50 @@ class ApiV1Test extends TestCase
             ->assertJsonPath('data.0.titre', 'Loi Climat');
     }
 
+    public function test_scrutins_index_filters_by_importance_level(): void
+    {
+        $response = $this->getJson('/api/scrutins?importance=important');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.importance_score', 170)
+            ->assertJsonPath('data.1.importance_score', 110);
+    }
+
+    public function test_scrutins_index_sorts_by_importance_desc(): void
+    {
+        DB::table('scrutins')->insert([
+            'id' => 'edededed-eded-4ded-8ded-edededededed',
+            'institution_id' => 'inst-an',
+            'numero' => 888,
+            'date' => '2020-01-01 00:00:00',
+            'titre' => 'Scrutin ultra important',
+            'sort' => 'ADOPTE',
+            'importance_score' => 250,
+            'nombre_votants' => 0,
+            'nombre_pour' => 0,
+            'nombre_contre' => 0,
+            'nombre_abstention' => 0,
+            'demandeur_texte' => null,
+            'source_url' => null,
+            'dossier_titre' => null,
+            'dossier_url' => null,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/scrutins?order_by=importance&order_dir=desc');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.0.importance_score', 250)
+            ->assertJsonPath('data.1.importance_score', 170)
+            ->assertJsonPath('data.2.importance_score', 110);
+    }
+
     public function test_scrutins_index_sorts_by_numero_desc(): void
     {
         DB::table('scrutins')->insert([
@@ -353,9 +397,11 @@ class ApiV1Test extends TestCase
                 'scrutins' => [
                     [
                         'id',
+                        'numero',
                         'titre',
                         'date',
                         'sort',
+                        'importance_score',
                     ],
                 ],
             ]);
@@ -378,6 +424,7 @@ class ApiV1Test extends TestCase
                 'date' => '2019-01-01 00:00:00',
                 'titre' => 'Texte commun alpha',
                 'sort' => 'ADOPTE',
+                'importance_score' => 0,
                 'nombre_votants' => 0,
                 'nombre_pour' => 0,
                 'nombre_contre' => 0,
@@ -398,6 +445,7 @@ class ApiV1Test extends TestCase
                 'date' => '2027-01-01 00:00:00',
                 'titre' => 'Texte commun beta',
                 'sort' => 'REJETE',
+                'importance_score' => 0,
                 'nombre_votants' => 0,
                 'nombre_pour' => 0,
                 'nombre_contre' => 0,
@@ -419,6 +467,51 @@ class ApiV1Test extends TestCase
             ->assertOk()
             ->assertJsonPath('scrutins.0.titre', 'Texte commun alpha')
             ->assertJsonPath('scrutins.1.titre', 'Texte commun beta');
+    }
+
+    public function test_scrutins_important_returns_sorted_by_importance_score_desc_and_limit(): void
+    {
+        DB::table('scrutins')->insert([
+            'id' => '99999999-9999-4999-8999-999999999999',
+            'institution_id' => 'inst-an',
+            'numero' => 999,
+            'date' => '2026-06-21 00:00:00',
+            'titre' => 'Motion de censure',
+            'sort' => 'REJETE',
+            'importance_score' => 250,
+            'nombre_votants' => 577,
+            'nombre_pour' => 280,
+            'nombre_contre' => 297,
+            'nombre_abstention' => 0,
+            'demandeur_texte' => null,
+            'source_url' => null,
+            'dossier_titre' => null,
+            'dossier_url' => null,
+            'resume_ia' => null,
+            'last_synced_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/scrutins/important?limit=2');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.importance_score', 250)
+            ->assertJsonPath('data.0.id', '99999999-9999-4999-8999-999999999999')
+            ->assertJsonPath('data.1.importance_score', 170)
+            ->assertJsonStructure([
+                'data' => [
+                    [
+                        'id',
+                        'titre',
+                        'date_scrutin',
+                        'importance_score',
+                        'sort',
+                    ],
+                ],
+            ]);
     }
 
     private function resetSchema(): void
@@ -507,6 +600,7 @@ class ApiV1Test extends TestCase
             $table->timestamp('date');
             $table->text('titre');
             $table->string('sort')->nullable();
+            $table->integer('importance_score')->default(0);
             $table->integer('nombre_votants')->default(0);
             $table->integer('nombre_pour')->default(0);
             $table->integer('nombre_contre')->default(0);
@@ -661,6 +755,7 @@ class ApiV1Test extends TestCase
                 'date' => '2026-06-10 12:00:00',
                 'titre' => 'Loi Climat',
                 'sort' => 'ADOPTE',
+                'importance_score' => 110,
                 'nombre_votants' => 276,
                 'nombre_pour' => 85,
                 'nombre_contre' => 180,
@@ -681,6 +776,7 @@ class ApiV1Test extends TestCase
                 'date' => '2026-06-20 09:00:00',
                 'titre' => 'Budget Defense',
                 'sort' => 'REJETE',
+                'importance_score' => 170,
                 'nombre_votants' => 273,
                 'nombre_pour' => 5,
                 'nombre_contre' => 261,

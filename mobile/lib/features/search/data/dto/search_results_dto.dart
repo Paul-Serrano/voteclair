@@ -108,20 +108,26 @@ class SearchGroupResultDto {
 class SearchScrutinResultDto {
   const SearchScrutinResultDto({
     required this.id,
+    required this.numero,
     required this.titre,
+    required this.importanceScore,
     this.date,
     this.sort,
   });
 
   final String id;
+  final int numero;
   final String titre;
+  final int importanceScore;
   final String? date;
   final String? sort;
 
   factory SearchScrutinResultDto.fromJson(Map<String, dynamic> json) {
     return SearchScrutinResultDto(
       id: (json['id'] as String?) ?? '',
+      numero: _asInt(json['numero']) ?? 0,
       titre: (json['titre'] as String?) ?? '',
+      importanceScore: _asInt(json['importance_score']) ?? 0,
       date: json['date'] as String?,
       sort: json['sort'] as String?,
     );
@@ -130,7 +136,9 @@ class SearchScrutinResultDto {
   SearchScrutinResult toDomain() {
     return SearchScrutinResult(
       id: id,
+      numero: numero,
       titre: titre,
+      importanceScore: importanceScore,
       date: date,
       sort: sort,
     );

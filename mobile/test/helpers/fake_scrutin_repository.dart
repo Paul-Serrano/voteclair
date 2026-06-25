@@ -28,7 +28,12 @@ class FakeScrutinRepository implements ScrutinRepository {
   final bool throwOnGetVotes;
 
   @override
-  Future<PaginatedScrutins> fetchScrutins(int page, {String search = ''}) async {
+  Future<PaginatedScrutins> fetchScrutins(
+    int page, {
+    String search = '',
+    String importanceFilter = 'all',
+    String sortMode = 'numero_desc',
+  }) async {
     if (getScrutinsDelay != null) {
       await Future<void>.delayed(getScrutinsDelay!);
     }
@@ -89,6 +94,7 @@ class FakeScrutinRepository implements ScrutinRepository {
       date: '2026-06-10',
       titre: 'Scrutin inconnu',
       sort: 'REJETE',
+      importanceScore: 0,
       institution: const ScrutinInstitution(
         id: 'inst',
         slug: 'assemblee-nationale',

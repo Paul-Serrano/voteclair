@@ -47,13 +47,17 @@ class SearchGroupResult {
 class SearchScrutinResult {
   const SearchScrutinResult({
     required this.id,
+    required this.numero,
     required this.titre,
+    required this.importanceScore,
     this.date,
     this.sort,
   });
 
   final String id;
+  final int numero;
   final String titre;
+  final int importanceScore;
   final String? date;
   final String? sort;
 }

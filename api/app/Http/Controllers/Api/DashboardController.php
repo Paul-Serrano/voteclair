@@ -33,7 +33,7 @@ class DashboardController extends Controller
                     'votes' => Vote::count(),
                 ],
                 'latest_scrutins' => Scrutin::query()
-                    ->select('id', 'numero', 'titre', 'date', 'sort')
+                    ->select('id', 'numero', 'titre', 'date', 'sort', 'importance_score')
                     ->orderByDesc('numero')
                     ->limit(10)
                     ->get()

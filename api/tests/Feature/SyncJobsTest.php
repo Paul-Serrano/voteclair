@@ -7,6 +7,7 @@ use App\Jobs\SyncGroupsJob;
 use App\Jobs\SyncScrutinsJob;
 use App\Jobs\SyncVotesJob;
 use App\Services\Clair\ClairApiClient;
+use App\Services\Scrutins\ImportanceScoringService;
 use App\Services\Sync\SyncStateService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
@@ -413,10 +414,11 @@ class SyncJobsTest extends TestCase
         $job = new SyncScrutinsJob();
         $client = app(ClairApiClient::class);
         $state = app(SyncStateService::class);
+        $importanceScoringService = app(ImportanceScoringService::class);
 
-        $job->handle($client, $state);
+        $job->handle($client, $state, $importanceScoringService);
         $state->set('last_scrutins_sync', '2026-06-17T12:00:00Z');
-        $job->handle($client, $state);
+        $job->handle($client, $state, $importanceScoringService);
 
         $this->assertDatabaseCount('scrutins', 2);
         $this->assertDatabaseHas('scrutins', [
@@ -789,7 +791,11 @@ class SyncJobsTest extends TestCase
             ], 200),
         ]);
 
-        (new SyncScrutinsJob())->handle(app(ClairApiClient::class), $state);
+        (new SyncScrutinsJob())->handle(
+            app(ClairApiClient::class),
+            $state,
+            app(ImportanceScoringService::class),
+        );
 
         $this->assertDatabaseCount('scrutins', 1);
         $this->assertDatabaseHas('scrutins', [
@@ -815,7 +821,11 @@ class SyncJobsTest extends TestCase
         $state = app(SyncStateService::class);
 
         try {
-            (new SyncScrutinsJob())->handle(app(ClairApiClient::class), $state);
+            (new SyncScrutinsJob())->handle(
+                app(ClairApiClient::class),
+                $state,
+                app(ImportanceScoringService::class),
+            );
             $this->fail('Expected a RuntimeException to be thrown.');
         } catch (RuntimeException) {
             $this->assertNull($state->get('last_scrutins_sync'));
@@ -1020,6 +1030,7 @@ class SyncJobsTest extends TestCase
             $table->timestamp('date');
             $table->text('titre');
             $table->string('sort')->nullable();
+            $table->integer('importance_score')->default(0);
             $table->integer('nombre_votants')->default(0);
             $table->integer('nombre_pour')->default(0);
             $table->integer('nombre_contre')->default(0);
@@ -1117,6 +1128,7 @@ class SyncJobsTest extends TestCase
                 'date' => '2026-06-16 00:00:00',
                 'titre' => 'Scrutin test',
                 'sort' => 'REJETE',
+                'importance_score' => 0,
                 'nombre_votants' => 276,
                 'nombre_pour' => 85,
                 'nombre_contre' => 180,

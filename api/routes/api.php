@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DeputyController;
 use App\Http\Controllers\Api\FavoriteActivityController;
 use App\Http\Controllers\Api\GroupController;
+use App\Http\Controllers\Api\ImportantScrutinController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ScrutinController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,7 @@ Route::prefix('groups')->group(function (): void {
 Route::get('/search', [SearchController::class, 'search']);
 
 Route::prefix('scrutins')->group(function (): void {
+    Route::get('important', [ImportantScrutinController::class, 'index']);
     Route::get('/', [ScrutinController::class, 'index']);
     Route::get('{scrutin}', [ScrutinController::class, 'show']);
     Route::get('{scrutin}/votes', [ScrutinController::class, 'votes']);

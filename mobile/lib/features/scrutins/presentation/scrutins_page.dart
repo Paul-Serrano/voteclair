@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'dart:async';
 
 import '../../../core/widgets/app_bottom_navigation.dart';
+import '../../../core/widgets/scrutin_filter_sort_controls.dart';
 import '../domain/entities/scrutin.dart';
 import 'providers/scrutins_provider.dart';
 
@@ -109,6 +110,17 @@ class _ScrutinsPageState extends ConsumerState<ScrutinsPage> {
             leading: const Icon(Icons.search),
             onChanged: _onSearchChanged,
           ),
+          const SizedBox(height: 12),
+          ScrutinFilterSortControls(
+            importanceFilter: state.importanceFilter,
+            sortMode: state.sortMode,
+            onImportanceChanged: (value) {
+              ref.read(scrutinsProvider.notifier).applyImportanceFilter(value);
+            },
+            onSortModeChanged: (value) {
+              ref.read(scrutinsProvider.notifier).applySortMode(value);
+            },
+          ),
           const SizedBox(height: 16),
           if (state.searchQuery.isNotEmpty)
             Padding(
@@ -148,20 +160,81 @@ class _ScrutinListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final importance = _importanceConfig(scrutin.importanceScore);
+
     return Card(
-      child: ListTile(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap: scrutin.id.isEmpty ? null : () => context.push('/scrutins/${scrutin.id}'),
-        title: Text(scrutin.titre),
-        subtitle: Text(
-          [
-            if (scrutin.numero != null) 'Scrutin n${scrutin.numero}',
-            scrutin.date ?? 'Date inconnue',
-            scrutin.institution?.nom ?? 'Institution inconnue',
-          ].join(' • '),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                scrutin.titre,
+                style: Theme.of(context).textTheme.titleSmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                [
+                  if (scrutin.numero != null) 'Scrutin n${scrutin.numero}',
+                  scrutin.date ?? 'Date inconnue',
+                  scrutin.institution?.nom ?? 'Institution inconnue',
+                ].join(' • '),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _SortBadge(sort: scrutin.sort),
+                  Chip(
+                    visualDensity: const VisualDensity(horizontal: -2, vertical: -3),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    backgroundColor: importance.background,
+                    side: BorderSide(color: importance.foreground.withValues(alpha: 0.3)),
+                    label: Text(
+                      importance.label,
+                      style: TextStyle(
+                        color: importance.foreground,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        isThreeLine: true,
-        trailing: _SortBadge(sort: scrutin.sort),
       ),
+    );
+  }
+
+  ({String label, Color background, Color foreground}) _importanceConfig(int score) {
+    if (score >= 150) {
+      return (
+        label: 'Tres important',
+        background: const Color(0xFFFFE9C2),
+        foreground: const Color(0xFF7A4300),
+      );
+    }
+    if (score >= 100) {
+      return (
+        label: 'Important',
+        background: const Color(0xFFE9F0FF),
+        foreground: const Color(0xFF1546A0),
+      );
+    }
+
+    return (
+      label: 'Standard',
+      background: const Color(0xFFF1F3F4),
+      foreground: const Color(0xFF4B5563),
     );
   }
 }

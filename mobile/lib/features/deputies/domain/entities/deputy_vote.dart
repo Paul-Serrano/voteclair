@@ -17,6 +17,7 @@ class DeputyVoteScrutin {
     required this.titre,
     required this.date,
     required this.sort,
+    required this.importanceScore,
   });
 
   final String id;
@@ -24,4 +25,5 @@ class DeputyVoteScrutin {
   final String titre;
   final String? date;
   final String? sort;
+  final int importanceScore;
 }

@@ -43,6 +43,7 @@ DeputyVote makeVote({
       titre: title,
       date: '2026-06-20',
       sort: sort,
+      importanceScore: 120,
     ),
   );
 }

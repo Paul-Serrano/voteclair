@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../../core/widgets/scrutin_filter_sort_controls.dart';
 import '../../domain/entities/search_results.dart';
 import '../providers/search_provider.dart';
 import '../widgets/search_bar.dart';
@@ -62,18 +63,28 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 }
 
-class _ResultsView extends StatelessWidget {
+class _ResultsView extends StatefulWidget {
   const _ResultsView({required this.results});
 
   final SearchResults results;
 
   @override
+  State<_ResultsView> createState() => _ResultsViewState();
+}
+
+class _ResultsViewState extends State<_ResultsView> {
+  ScrutinImportanceFilter _importanceFilter = ScrutinImportanceFilter.all;
+  ScrutinSortMode _sortMode = ScrutinSortMode.numeroDesc;
+
+  @override
   Widget build(BuildContext context) {
+    final filteredSortedScrutins = _applyScrutinFilterAndSort(widget.results.scrutins);
+
     return Column(
       children: [
         SearchSection(
           title: 'Députés',
-          children: results.deputies
+          children: widget.results.deputies
               .map(
                 (item) => SearchResultTile(
                   title: item.fullName,
@@ -89,7 +100,7 @@ class _ResultsView extends StatelessWidget {
         ),
         SearchSection(
           title: 'Groupes',
-          children: results.groups
+          children: widget.results.groups
               .map(
                 (item) => SearchResultTile(
                   title: item.nom,
@@ -102,18 +113,50 @@ class _ResultsView extends StatelessWidget {
         ),
         SearchSection(
           title: 'Scrutins',
-          children: results.scrutins
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: ScrutinFilterSortControls(
+                importanceFilter: _importanceFilter,
+                sortMode: _sortMode,
+                onImportanceChanged: (value) => setState(() => _importanceFilter = value),
+                onSortModeChanged: (value) => setState(() => _sortMode = value),
+              ),
+            ),
+            ...filteredSortedScrutins
               .map(
                 (item) => SearchResultTile(
                   title: item.titre,
-                  subtitle: '${item.date ?? '-'} • ${_sortLabel(item.sort)}',
+                  subtitle: 'n${item.numero} • ${item.date ?? '-'} • ${_sortLabel(item.sort)} • ${_importanceLabel(item.importanceScore)}',
                   onTap: () => context.push('/scrutins/${item.id}'),
                 ),
-              )
-              .toList(growable: false),
+              ),
+          ],
         ),
       ],
     );
+  }
+
+  List<SearchScrutinResult> _applyScrutinFilterAndSort(List<SearchScrutinResult> values) {
+    final filtered = values.where((item) {
+      return switch (_importanceFilter) {
+        ScrutinImportanceFilter.all => true,
+        ScrutinImportanceFilter.important => item.importanceScore >= 100,
+        ScrutinImportanceFilter.veryImportant => item.importanceScore >= 150,
+      };
+    }).toList(growable: false);
+
+    final sorted = [...filtered];
+    sorted.sort((a, b) {
+      return switch (_sortMode) {
+        ScrutinSortMode.numeroAsc => a.numero.compareTo(b.numero),
+        ScrutinSortMode.numeroDesc => b.numero.compareTo(a.numero),
+        ScrutinSortMode.importanceAsc => a.importanceScore.compareTo(b.importanceScore),
+        ScrutinSortMode.importanceDesc => b.importanceScore.compareTo(a.importanceScore),
+      };
+    });
+
+    return sorted;
   }
 
   ImageProvider<Object>? _networkImageOrNull(String? url) {
@@ -133,6 +176,17 @@ class _ResultsView extends StatelessWidget {
       default:
         return '-';
     }
+  }
+
+  String _importanceLabel(int score) {
+    if (score >= 150) {
+      return 'Tres important';
+    }
+    if (score >= 100) {
+      return 'Important';
+    }
+
+    return 'Standard';
   }
 }
 

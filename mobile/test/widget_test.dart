@@ -39,6 +39,7 @@ class FakeDashboardRepository implements DashboardRepository {
           titre: 'Test Scrutin',
           date: DateTime.now(),
           sort: 'Adopté',
+          importanceScore: 130,
         ),
       ],
       topGroups: [

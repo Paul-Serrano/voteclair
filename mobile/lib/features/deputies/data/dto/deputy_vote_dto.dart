@@ -38,6 +38,7 @@ class DeputyVoteScrutinDto {
     required this.titre,
     required this.date,
     required this.sort,
+    required this.importanceScore,
   });
 
   final String id;
@@ -45,6 +46,7 @@ class DeputyVoteScrutinDto {
   final String titre;
   final String? date;
   final String? sort;
+  final int importanceScore;
 
   factory DeputyVoteScrutinDto.fromJson(Map<String, dynamic> json) {
     return DeputyVoteScrutinDto(
@@ -53,6 +55,7 @@ class DeputyVoteScrutinDto {
       titre: (json['titre'] as String?) ?? '',
       date: json['date'] as String?,
       sort: json['sort'] as String?,
+      importanceScore: _asInt(json['importance_score']) ?? 0,
     );
   }
 
@@ -63,6 +66,7 @@ class DeputyVoteScrutinDto {
       titre: titre,
       date: date,
       sort: sort,
+      importanceScore: importanceScore,
     );
   }
 

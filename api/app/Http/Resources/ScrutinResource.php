@@ -19,6 +19,7 @@ class ScrutinResource extends JsonResource
             'date' => $this->date?->toDateString(),
             'titre' => $this->titre,
             'sort' => $this->sort,
+            'importance_score' => (int) ($this->importance_score ?? 0),
             'institution' => $this->whenLoaded('institution', fn (): array => [
                 'id' => $this->institution->id,
                 'slug' => $this->institution->slug,

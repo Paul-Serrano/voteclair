@@ -8,6 +8,7 @@ const sampleScrutin = Scrutin(
   date: '2026-06-10',
   titre: 'Loi Climat',
   sort: 'ADOPTE',
+  importanceScore: 140,
   institution: ScrutinInstitution(
     id: 'inst-an',
     slug: 'assemblee-nationale',
@@ -56,6 +57,7 @@ const sampleScrutinWithDifferentResult = Scrutin(
   date: '2026-06-20',
   titre: 'Budget Defense',
   sort: 'REJETE',
+  importanceScore: 70,
   institution: ScrutinInstitution(
     id: 'inst-an',
     slug: 'assemblee-nationale',

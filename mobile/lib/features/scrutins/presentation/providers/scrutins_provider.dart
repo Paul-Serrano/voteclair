@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/api_client.dart';
+import '../../../../core/widgets/scrutin_filter_sort_controls.dart';
 import '../../data/repositories/scrutin_repository_impl.dart';
 import '../../domain/entities/scrutin.dart';
 import '../../domain/repositories/scrutin_repository.dart';
@@ -15,6 +16,8 @@ class ScrutinsState {
     this.currentPage = 0,
     this.lastPage = 1,
     this.searchQuery = '',
+    this.importanceFilter = ScrutinImportanceFilter.all,
+    this.sortMode = ScrutinSortMode.numeroDesc,
     this.isLoadingInitial = false,
     this.isLoadingMore = false,
     this.errorMessage,
@@ -24,6 +27,8 @@ class ScrutinsState {
   final int currentPage;
   final int lastPage;
   final String searchQuery;
+  final ScrutinImportanceFilter importanceFilter;
+  final ScrutinSortMode sortMode;
   final bool isLoadingInitial;
   final bool isLoadingMore;
   final String? errorMessage;
@@ -36,6 +41,8 @@ class ScrutinsState {
     int? currentPage,
     int? lastPage,
     String? searchQuery,
+    ScrutinImportanceFilter? importanceFilter,
+    ScrutinSortMode? sortMode,
     bool? isLoadingInitial,
     bool? isLoadingMore,
     String? errorMessage,
@@ -46,6 +53,8 @@ class ScrutinsState {
       currentPage: currentPage ?? this.currentPage,
       lastPage: lastPage ?? this.lastPage,
       searchQuery: searchQuery ?? this.searchQuery,
+      importanceFilter: importanceFilter ?? this.importanceFilter,
+      sortMode: sortMode ?? this.sortMode,
       isLoadingInitial: isLoadingInitial ?? this.isLoadingInitial,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
@@ -75,7 +84,12 @@ class ScrutinsNotifier extends StateNotifier<ScrutinsState> {
     );
 
     try {
-      final page = await ref.read(scrutinRepositoryProvider).fetchScrutins(1, search: state.searchQuery);
+      final page = await ref.read(scrutinRepositoryProvider).fetchScrutins(
+        1,
+        search: state.searchQuery,
+        importanceFilter: _importanceFilterQuery(state.importanceFilter),
+        sortMode: _sortModeQuery(state.sortMode),
+      );
       state = state.copyWith(
         scrutins: page.scrutins,
         currentPage: page.currentPage,
@@ -107,6 +121,24 @@ class ScrutinsNotifier extends StateNotifier<ScrutinsState> {
     await loadInitial();
   }
 
+  Future<void> applyImportanceFilter(ScrutinImportanceFilter filter) async {
+    if (filter == state.importanceFilter) {
+      return;
+    }
+
+    state = state.copyWith(importanceFilter: filter, clearError: true);
+    await loadInitial();
+  }
+
+  Future<void> applySortMode(ScrutinSortMode sortMode) async {
+    if (sortMode == state.sortMode) {
+      return;
+    }
+
+    state = state.copyWith(sortMode: sortMode, clearError: true);
+    await loadInitial();
+  }
+
   Future<void> loadNextPage() async {
     if (state.isLoadingInitial || state.isLoadingMore || !state.hasMore) {
       return;
@@ -119,6 +151,8 @@ class ScrutinsNotifier extends StateNotifier<ScrutinsState> {
       final page = await ref.read(scrutinRepositoryProvider).fetchScrutins(
         nextPage,
         search: state.searchQuery,
+        importanceFilter: _importanceFilterQuery(state.importanceFilter),
+        sortMode: _sortModeQuery(state.sortMode),
       );
       final merged = <Scrutin>[...state.scrutins, ...page.scrutins];
 
@@ -134,6 +168,23 @@ class ScrutinsNotifier extends StateNotifier<ScrutinsState> {
         errorMessage: '$error',
       );
     }
+  }
+
+  String _importanceFilterQuery(ScrutinImportanceFilter filter) {
+    return switch (filter) {
+      ScrutinImportanceFilter.all => 'all',
+      ScrutinImportanceFilter.important => 'important',
+      ScrutinImportanceFilter.veryImportant => 'very_important',
+    };
+  }
+
+  String _sortModeQuery(ScrutinSortMode sortMode) {
+    return switch (sortMode) {
+      ScrutinSortMode.numeroDesc => 'numero_desc',
+      ScrutinSortMode.numeroAsc => 'numero_asc',
+      ScrutinSortMode.importanceDesc => 'importance_desc',
+      ScrutinSortMode.importanceAsc => 'importance_asc',
+    };
   }
 }
 

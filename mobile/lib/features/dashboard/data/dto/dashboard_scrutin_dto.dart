@@ -7,6 +7,7 @@ class DashboardScrutinDto {
     required this.titre,
     required this.date,
     required this.sort,
+    required this.importanceScore,
   });
 
   final String id;
@@ -14,6 +15,7 @@ class DashboardScrutinDto {
   final String titre;
   final DateTime date;
   final String sort;
+  final int importanceScore;
 
   factory DashboardScrutinDto.fromJson(Map<String, dynamic> json) {
     return DashboardScrutinDto(
@@ -22,6 +24,7 @@ class DashboardScrutinDto {
       titre: (json['titre'] as String?) ?? '',
       date: DateTime.tryParse(json['date'] as String? ?? '') ?? DateTime.now(),
       sort: (json['sort'] as String?) ?? '',
+      importanceScore: (json['importance_score'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -32,6 +35,7 @@ class DashboardScrutinDto {
       titre: titre,
       date: date,
       sort: sort,
+      importanceScore: importanceScore,
     );
   }
 }

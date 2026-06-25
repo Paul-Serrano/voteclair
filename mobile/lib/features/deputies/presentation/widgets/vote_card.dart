@@ -11,6 +11,7 @@ class VoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final badge = _positionBadge(vote.position);
+    final importance = _importanceBadge(vote.scrutin.importanceScore);
 
     return Card(
       child: InkWell(
@@ -35,6 +36,11 @@ class VoteCard extends StatelessWidget {
                     const Chip(
                       label: Text('Vote par delegation'),
                     ),
+                  Chip(
+                    label: Text(importance.label),
+                    backgroundColor: importance.backgroundColor,
+                    side: BorderSide(color: importance.borderColor),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -60,10 +66,38 @@ class VoteCard extends StatelessWidget {
                 'Resultat: ${_formatResult(vote.scrutin.sort)}',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
+              const SizedBox(height: 2),
+              Text(
+                'Score importance: ${vote.scrutin.importanceScore}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  _PositionBadge _importanceBadge(int score) {
+    if (score >= 150) {
+      return const _PositionBadge(
+        label: '🔥 Tres important',
+        backgroundColor: Color(0xFFFFE9C2),
+        borderColor: Color(0xFFB26A00),
+      );
+    }
+    if (score >= 100) {
+      return const _PositionBadge(
+        label: '⭐ Important',
+        backgroundColor: Color(0xFFE9F0FF),
+        borderColor: Color(0xFF3564BD),
+      );
+    }
+
+    return const _PositionBadge(
+      label: '• Standard',
+      backgroundColor: Color(0xFFF1F3F4),
+      borderColor: Color(0xFF9AA0A6),
     );
   }
 

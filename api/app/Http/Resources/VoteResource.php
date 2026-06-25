@@ -21,6 +21,7 @@ class VoteResource extends JsonResource
                 'titre' => $this->scrutin->titre,
                 'date' => $this->scrutin->date?->toDateString(),
                 'sort' => $this->scrutin->sort,
+                'importance_score' => (int) ($this->scrutin->importance_score ?? 0),
             ]),
             'deputy' => $this->whenLoaded('deputy', fn (): array => [
                 'slug' => $this->deputy->slug,

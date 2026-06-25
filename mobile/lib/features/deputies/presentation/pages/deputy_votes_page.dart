@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/widgets/scrutin_filter_sort_controls.dart';
 import '../../domain/entities/deputy.dart';
 import '../../domain/entities/deputy_vote.dart';
 import '../providers/deputy_details_provider.dart';
@@ -20,6 +21,8 @@ class DeputyVotesPage extends ConsumerStatefulWidget {
 class _DeputyVotesPageState extends ConsumerState<DeputyVotesPage> {
   late final ScrollController _scrollController;
   String _searchQuery = '';
+  ScrutinImportanceFilter _importanceFilter = ScrutinImportanceFilter.all;
+  ScrutinSortMode _sortMode = ScrutinSortMode.numeroDesc;
 
   @override
   void initState() {
@@ -51,7 +54,7 @@ class _DeputyVotesPageState extends ConsumerState<DeputyVotesPage> {
     final votesState = ref.watch(deputyVotesProvider(widget.slug));
     final deputyAsync = ref.watch(deputyDetailsProvider(widget.slug));
 
-    final filteredVotes = _filterVotes(votesState.votes, _searchQuery);
+    final filteredVotes = _filterAndSortVotes(votesState.votes, _searchQuery);
 
     return Scaffold(
       appBar: AppBar(
@@ -124,10 +127,21 @@ class _DeputyVotesPageState extends ConsumerState<DeputyVotesPage> {
           if (index == 1) {
             return Padding(
               padding: const EdgeInsets.only(top: 12, bottom: 12),
-              child: SearchBar(
-                hintText: 'Rechercher par titre de scrutin',
-                leading: const Icon(Icons.search),
-                onChanged: (value) => setState(() => _searchQuery = value),
+              child: Column(
+                children: [
+                  SearchBar(
+                    hintText: 'Rechercher par titre de scrutin',
+                    leading: const Icon(Icons.search),
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                  ),
+                  const SizedBox(height: 8),
+                  ScrutinFilterSortControls(
+                    importanceFilter: _importanceFilter,
+                    sortMode: _sortMode,
+                    onImportanceChanged: (value) => setState(() => _importanceFilter = value),
+                    onSortModeChanged: (value) => setState(() => _sortMode = value),
+                  ),
+                ],
               ),
             );
           }
@@ -173,16 +187,36 @@ class _DeputyVotesPageState extends ConsumerState<DeputyVotesPage> {
     return 2 + hasEmptyMessage + hasBottomLoader;
   }
 
-  List<DeputyVote> _filterVotes(List<DeputyVote> votes, String query) {
+  List<DeputyVote> _filterAndSortVotes(List<DeputyVote> votes, String query) {
     final normalizedQuery = query.trim().toLowerCase();
-    if (normalizedQuery.isEmpty) {
-      return votes;
-    }
+    final filtered = votes.where((vote) {
+      final matchesQuery = normalizedQuery.isEmpty || vote.scrutin.titre.toLowerCase().contains(normalizedQuery);
+      final score = vote.scrutin.importanceScore;
+      final matchesImportance = switch (_importanceFilter) {
+        ScrutinImportanceFilter.all => true,
+        ScrutinImportanceFilter.important => score >= 100,
+        ScrutinImportanceFilter.veryImportant => score >= 150,
+      };
 
-    return votes
-        .where((vote) =>
-            vote.scrutin.titre.toLowerCase().contains(normalizedQuery))
-        .toList(growable: false);
+      return matchesQuery && matchesImportance;
+    }).toList(growable: false);
+
+    final sorted = [...filtered];
+    sorted.sort((a, b) {
+      final numeroA = a.scrutin.numero ?? 0;
+      final numeroB = b.scrutin.numero ?? 0;
+      final importanceA = a.scrutin.importanceScore;
+      final importanceB = b.scrutin.importanceScore;
+
+      return switch (_sortMode) {
+        ScrutinSortMode.numeroAsc => numeroA.compareTo(numeroB),
+        ScrutinSortMode.numeroDesc => numeroB.compareTo(numeroA),
+        ScrutinSortMode.importanceAsc => importanceA.compareTo(importanceB),
+        ScrutinSortMode.importanceDesc => importanceB.compareTo(importanceA),
+      };
+    });
+
+    return sorted;
   }
 }
 

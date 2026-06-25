@@ -8,6 +8,9 @@ import '../../../activity/presentation/providers/favorites_activity_provider.dar
 import '../../../activity/presentation/widgets/activity_card.dart';
 import '../../../activity/domain/entities/activity_item.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
+import '../../../important_votes/presentation/providers/important_votes_provider.dart';
+import '../../../important_votes/presentation/widgets/important_vote_card.dart';
+import '../../../important_votes/domain/entities/important_vote_item.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/dashboard_group_tile.dart';
 import '../widgets/dashboard_scrutin_tile.dart';
@@ -21,6 +24,7 @@ class DashboardPage extends ConsumerWidget {
     final dashboardAsync = ref.watch(dashboardProvider);
     final favoriteSlugsAsync = ref.watch(favoriteSlugsNotifierProvider);
     final favoriteActivityPreviewAsync = ref.watch(favoritesActivityPreviewProvider);
+    final importantVotesPreviewAsync = ref.watch(importantVotesPreviewProvider);
 
     return Scaffold(
       body: dashboardAsync.when(
@@ -32,6 +36,8 @@ class DashboardPage extends ConsumerWidget {
             ref.refresh(dashboardProvider);
             // ignore: unused_result
             ref.refresh(favoritesActivityProvider);
+            // ignore: unused_result
+            ref.refresh(importantVotesProvider);
             return Future.value();
           },
           child: SingleChildScrollView(
@@ -117,6 +123,8 @@ class DashboardPage extends ConsumerWidget {
                         slugsAsync: favoriteSlugsAsync,
                         activityAsync: favoriteActivityPreviewAsync,
                       ),
+                      const SizedBox(height: 12),
+                      _ImportantVotesSection(itemsAsync: importantVotesPreviewAsync),
                       const SizedBox(height: 20),
                       // Stats Section
                       Text(
@@ -494,6 +502,76 @@ class _FavoritesActivitySection extends StatelessWidget {
                       }).toList(growable: false),
                     );
                   },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ImportantVotesSection extends StatelessWidget {
+  const _ImportantVotesSection({required this.itemsAsync});
+
+  final AsyncValue<List<ImportantVoteItem>> itemsAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '🔥 Votes importants',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 10),
+            itemsAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: LinearProgressIndicator(minHeight: 2),
+              ),
+              error: (error, __) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Impossible de charger les votes importants.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$error',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ],
+              ),
+              data: (items) {
+                if (items.isEmpty) {
+                  return Text(
+                    'Aucun scrutin important trouvé.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  );
+                }
+
+                return Column(
+                  children: items.take(5).map((item) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ImportantVoteCard(
+                        item: item,
+                        compact: true,
+                        onTap: () => context.push('/scrutins/${item.id}'),
+                      ),
+                    );
+                  }).toList(growable: false),
                 );
               },
             ),

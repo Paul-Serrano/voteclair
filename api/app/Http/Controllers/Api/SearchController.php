@@ -86,7 +86,7 @@ class SearchController extends Controller
             ->get();
 
         $scrutins = Scrutin::query()
-            ->select(['id', 'titre', 'date', 'sort', 'resume_ia'])
+            ->select(['id', 'numero', 'titre', 'date', 'sort', 'importance_score', 'resume_ia'])
             ->where(function ($q) use ($isPgsql, $like, $lowerLike): void {
                 if ($isPgsql) {
                     $q->whereRaw('titre ILIKE ?', [$like])

@@ -26,6 +26,9 @@ class ScrutinController extends Controller
     )]
     #[QueryParameter('search', 'Filtre texte sur le titre du scrutin.', required: false, example: 'budget')]
     #[QueryParameter('sort', 'Filtre par résultat du scrutin.', required: false, example: 'ADOPTE')]
+    #[QueryParameter('importance', 'Filtre d\'importance: all, important, very_important.', required: false, example: 'important')]
+    #[QueryParameter('order_by', 'Tri: numero ou importance.', required: false, example: 'importance')]
+    #[QueryParameter('order_dir', 'Direction de tri: asc ou desc.', required: false, example: 'desc')]
     #[QueryParameter('from', 'Date de début (YYYY-MM-DD).', required: false, type: 'string', format: 'date', example: '2026-01-01')]
     #[QueryParameter('to', 'Date de fin (YYYY-MM-DD).', required: false, type: 'string', format: 'date', example: '2026-12-31')]
     #[QueryParameter('page', 'Numéro de page de pagination.', required: false, example: 1)]
@@ -34,6 +37,9 @@ class ScrutinController extends Controller
     {
         $search = trim((string) $request->query('search', ''));
         $sort = trim((string) $request->query('sort', ''));
+        $importance = trim((string) $request->query('importance', 'all'));
+        $orderBy = trim((string) $request->query('order_by', 'numero'));
+        $orderDir = strtolower(trim((string) $request->query('order_dir', 'desc')));
         $from = trim((string) $request->query('from', ''));
         $to = trim((string) $request->query('to', ''));
 
@@ -47,6 +53,14 @@ class ScrutinController extends Controller
             $query->where('sort', $sort);
         }
 
+        if ($importance === 'important') {
+            $query->where('importance_score', '>=', 100);
+        }
+
+        if ($importance === 'very_important') {
+            $query->where('importance_score', '>=', 150);
+        }
+
         if ($from !== '') {
             $query->whereDate('date', '>=', $from);
         }
@@ -55,7 +69,17 @@ class ScrutinController extends Controller
             $query->whereDate('date', '<=', $to);
         }
 
-        $query->orderByDesc('numero');
+        $orderColumn = match ($orderBy) {
+            'importance' => 'importance_score',
+            default => 'numero',
+        };
+        $orderDirection = in_array($orderDir, ['asc', 'desc'], true) ? $orderDir : 'desc';
+
+        $query->orderBy($orderColumn, $orderDirection);
+
+        if ($orderColumn !== 'numero') {
+            $query->orderByDesc('numero');
+        }
 
         return new ScrutinCollection($query->paginate());
     }

@@ -5,6 +5,7 @@ class Scrutin {
     required this.date,
     required this.titre,
     required this.sort,
+    required this.importanceScore,
     required this.resultats,
     this.groupes = const <ScrutinGroupStat>[],
     this.institution,
@@ -20,6 +21,7 @@ class Scrutin {
   final String? date;
   final String titre;
   final String? sort;
+  final int importanceScore;
   final ScrutinInstitution? institution;
   final String? resumeIa;
   final String? demandeurTexte;

@@ -7,6 +7,7 @@ class ScrutinDto {
     required this.date,
     required this.titre,
     required this.sort,
+    required this.importanceScore,
     required this.resultats,
     required this.groupes,
     this.institution,
@@ -22,6 +23,7 @@ class ScrutinDto {
   final String? date;
   final String titre;
   final String? sort;
+  final int importanceScore;
   final ScrutinInstitutionDto? institution;
   final String? resumeIa;
   final String? demandeurTexte;
@@ -38,6 +40,7 @@ class ScrutinDto {
       date: json['date'] as String?,
       titre: (json['titre'] as String?) ?? '',
       sort: json['sort'] as String?,
+      importanceScore: _asInt(json['importance_score']) ?? 0,
       institution: json['institution'] is Map<String, dynamic>
           ? ScrutinInstitutionDto.fromJson(json['institution'] as Map<String, dynamic>)
           : null,
@@ -61,6 +64,7 @@ class ScrutinDto {
       date: date,
       titre: titre,
       sort: sort,
+      importanceScore: importanceScore,
       institution: institution?.toDomain(),
       resumeIa: resumeIa,
       demandeurTexte: demandeurTexte,

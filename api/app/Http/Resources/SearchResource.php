@@ -44,9 +44,11 @@ class SearchResource extends JsonResource
             ->map(function ($scrutin): array {
                 return [
                     'id' => $scrutin->id,
+                    'numero' => (int) ($scrutin->numero ?? 0),
                     'titre' => $scrutin->titre,
                     'date' => $scrutin->date?->toDateString(),
                     'sort' => $scrutin->sort,
+                    'importance_score' => (int) ($scrutin->importance_score ?? 0),
                 ];
             })
             ->values()

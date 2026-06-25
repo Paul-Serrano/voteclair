@@ -83,7 +83,7 @@ class DeputyController extends Controller
             ->select('votes.*')
             ->join('scrutins', 'scrutins.id', '=', 'votes.scrutin_id')
             ->where('votes.deputy_id', $deputy->id)
-            ->with('scrutin:id,numero,titre,date,sort')
+            ->with('scrutin:id,numero,titre,date,sort,importance_score')
             ->orderByDesc('scrutins.numero');
 
         return new VoteCollection($query->paginate());

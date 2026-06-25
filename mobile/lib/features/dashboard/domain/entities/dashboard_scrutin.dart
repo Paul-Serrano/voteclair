@@ -5,6 +5,7 @@ class DashboardScrutin {
     required this.titre,
     required this.date,
     required this.sort,
+    required this.importanceScore,
   });
 
   final String id;
@@ -12,4 +13,5 @@ class DashboardScrutin {
   final String titre;
   final DateTime date;
   final String sort;
+  final int importanceScore;
 }

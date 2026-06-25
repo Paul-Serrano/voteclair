@@ -3,11 +3,18 @@
 namespace App\Jobs;
 
 use App\Services\Clair\ClairApiClient;
+use App\Services\Scrutins\ImportanceScoringService;
 use App\Services\Sync\SyncStateService;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SyncScrutinsJob extends BaseSyncJob
 {
-    public function handle(ClairApiClient $client, SyncStateService $syncStateService): void
+    public function handle(
+        ClairApiClient $client,
+        SyncStateService $syncStateService,
+        ImportanceScoringService $importanceScoringService,
+    ): void
     {
         $chamber = $this->chamber();
         $institutionId = $this->institutionIdForChamber($chamber);
@@ -48,6 +55,7 @@ class SyncScrutinsJob extends BaseSyncJob
                     'date' => (string) $item['date'],
                     'titre' => (string) $item['titre'],
                     'sort' => $sort,
+                    'importance_score' => 0,
                     'nombre_votants' => (int) ($item['nombreVotants'] ?? 0),
                     'nombre_pour' => (int) ($item['nombrePour'] ?? 0),
                     'nombre_contre' => (int) ($item['nombreContre'] ?? 0),
@@ -69,6 +77,7 @@ class SyncScrutinsJob extends BaseSyncJob
                 'date',
                 'titre',
                 'sort',
+                'importance_score',
                 'nombre_votants',
                 'nombre_pour',
                 'nombre_contre',
@@ -82,6 +91,10 @@ class SyncScrutinsJob extends BaseSyncJob
                 'updated_at',
             ]);
 
+            if ($rows !== []) {
+                $this->recalculateImportanceForRows($rows, $importanceScoringService);
+            }
+
             $this->logInfo('Sync scrutins page completed', [
                 'chamber' => $chamber,
                 'page' => $page,
@@ -91,8 +104,47 @@ class SyncScrutinsJob extends BaseSyncJob
         }
 
         $syncStateService->set($stateKey, $runStartedAt);
+        Cache::forget('scrutins:important:5');
+        Cache::forget('scrutins:important:20');
 
         $this->logInfo(sprintf('Scrutins imported: %d', $processed), ['chamber' => $chamber]);
         $this->logInfo('Sync scrutins completed', ['chamber' => $chamber, 'processed' => $processed]);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function recalculateImportanceForRows(array $rows, ImportanceScoringService $importanceScoringService): void
+    {
+        $ids = array_values(array_filter(array_map(
+            fn (array $row): string => (string) ($row['id'] ?? ''),
+            $rows,
+        )));
+
+        if ($ids === []) {
+            return;
+        }
+
+        $scrutins = DB::table('scrutins')
+            ->whereIn('id', $ids)
+            ->get(['id', 'titre', 'demandeur_texte', 'nombre_pour', 'nombre_contre', 'importance_score']);
+
+        foreach ($scrutins as $row) {
+            $scrutin = new \App\Models\Scrutin();
+            $scrutin->id = (string) $row->id;
+            $scrutin->titre = (string) ($row->titre ?? '');
+            $scrutin->demandeur_texte = $row->demandeur_texte;
+            $scrutin->nombre_pour = (int) ($row->nombre_pour ?? 0);
+            $scrutin->nombre_contre = (int) ($row->nombre_contre ?? 0);
+
+            $score = $importanceScoringService->calculate($scrutin);
+
+            DB::table('scrutins')
+                ->where('id', $scrutin->id)
+                ->update([
+                    'importance_score' => $score,
+                    'updated_at' => now(),
+                ]);
+        }
     }
 }

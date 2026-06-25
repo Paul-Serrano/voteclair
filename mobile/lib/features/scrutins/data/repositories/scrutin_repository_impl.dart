@@ -13,10 +13,34 @@ class ScrutinRepositoryImpl implements ScrutinRepository {
   final ApiClient _apiClient;
 
   @override
-  Future<PaginatedScrutins> fetchScrutins(int page, {String search = ''}) async {
+  Future<PaginatedScrutins> fetchScrutins(
+    int page, {
+    String search = '',
+    String importanceFilter = 'all',
+    String sortMode = 'numero_desc',
+  }) async {
     final queryParameters = <String, dynamic>{'page': page};
     if (search.trim().isNotEmpty) {
       queryParameters['search'] = search.trim();
+    }
+
+    if (importanceFilter != 'all') {
+      queryParameters['importance'] = importanceFilter;
+    }
+
+    switch (sortMode) {
+      case 'importance_asc':
+        queryParameters['order_by'] = 'importance';
+        queryParameters['order_dir'] = 'asc';
+      case 'importance_desc':
+        queryParameters['order_by'] = 'importance';
+        queryParameters['order_dir'] = 'desc';
+      case 'numero_asc':
+        queryParameters['order_by'] = 'numero';
+        queryParameters['order_dir'] = 'asc';
+      default:
+        queryParameters['order_by'] = 'numero';
+        queryParameters['order_dir'] = 'desc';
     }
 
     final response = await _apiClient.get(

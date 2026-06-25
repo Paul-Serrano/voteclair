@@ -24,6 +24,7 @@ class Scrutin extends Model
         return [
             'date' => 'datetime',
             'last_synced_at' => 'datetime',
+            'importance_score' => 'integer',
         ];
     }
 
