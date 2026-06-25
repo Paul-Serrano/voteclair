@@ -161,7 +161,29 @@ class ApiV1Test extends TestCase
             ->assertJsonPath('data.group.slug', 'g-centre')
             ->assertJsonPath('data.circonscription.nom', 'Paris 1')
             ->assertJsonPath('data.stats.presence', 91)
-            ->assertJsonPath('data.stats.loyaute', 84);
+            ->assertJsonPath('data.stats.loyaute', 84)
+            ->assertJsonPath('data.political_profile.most_frequent_vote', 'POUR')
+            ->assertJsonPath('data.political_profile.most_frequent_vote_count', 1)
+            ->assertJsonPath('data.political_profile.group_proximity_rate', null)
+            ->assertJsonPath('data.political_profile.group_proximity_votes_count', 0)
+            ->assertJsonPath('data.political_profile.presence_rate', 91)
+            ->assertJsonPath('data.political_profile.loyalty_rate', 84)
+            ->assertJsonCount(2, 'data.political_profile.top_topics')
+            ->assertJsonStructure([
+                'data' => [
+                    'political_profile' => [
+                        'most_frequent_vote',
+                        'most_frequent_vote_count',
+                        'group_proximity_rate',
+                        'group_proximity_votes_count',
+                        'top_topics' => [
+                            ['label', 'count'],
+                        ],
+                        'presence_rate',
+                        'loyalty_rate',
+                    ],
+                ],
+            ]);
     }
 
     public function test_deputy_votes_returns_paginated_votes_sorted_by_scrutin_numero_desc(): void

@@ -24,6 +24,13 @@ class Deputy {
     this.statsAmendements,
     this.statsAmendementsAdoptes,
     this.statsQuestions,
+    this.mostFrequentVote,
+    this.mostFrequentVoteCount,
+    this.groupProximityRate,
+    this.groupProximityVotesCount,
+    this.topTopics = const <DeputyTopicStat>[],
+    this.politicalPresenceRate,
+    this.politicalLoyaltyRate,
   });
 
   final String slug;
@@ -50,6 +57,23 @@ class Deputy {
   final int? statsAmendements;
   final int? statsAmendementsAdoptes;
   final int? statsQuestions;
+  final String? mostFrequentVote;
+  final int? mostFrequentVoteCount;
+  final double? groupProximityRate;
+  final int? groupProximityVotesCount;
+  final List<DeputyTopicStat> topTopics;
+  final int? politicalPresenceRate;
+  final int? politicalLoyaltyRate;
 
   String get fullName => '$prenom $nom'.trim();
+}
+
+class DeputyTopicStat {
+  const DeputyTopicStat({
+    required this.label,
+    required this.count,
+  });
+
+  final String label;
+  final int count;
 }

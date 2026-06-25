@@ -22,7 +22,8 @@ void main() {
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 60));
+      await tester.pump();
 
       expect(find.text('Fiche depute'), findsOneWidget);
       expect(find.text('Jean'), findsOneWidget);
@@ -33,7 +34,7 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('Voir les votes'), findsOneWidget);
     });

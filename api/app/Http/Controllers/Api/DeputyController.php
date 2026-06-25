@@ -10,6 +10,7 @@ use App\Http\Resources\VoteCollection;
 use App\Models\Deputy;
 use App\Models\Vote;
 use App\Services\Deputies\DeputyComparisonService;
+use App\Services\Deputies\DeputyPoliticalProfileService;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group as ApiGroup;
 use Dedoc\Scramble\Attributes\PathParameter;
@@ -87,9 +88,10 @@ class DeputyController extends Controller
     #[PathParameter('deputy', 'Slug du député.', required: true, example: 'jean-dupont')]
     #[Response(200, 'Détail du député.', type: 'array')]
     #[Response(404, 'Député introuvable.', type: 'array')]
-    public function show(Deputy $deputy): DeputyResource
+    public function show(Deputy $deputy, DeputyPoliticalProfileService $politicalProfileService): DeputyResource
     {
         $deputy->loadMissing(['group:id,slug,nom,couleur', 'circonscription:id,nom,departement,departement_name']);
+        $deputy->setAttribute('political_profile', $politicalProfileService->build($deputy));
 
         return new DeputyResource($deputy);
     }

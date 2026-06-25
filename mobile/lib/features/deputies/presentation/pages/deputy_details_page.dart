@@ -121,6 +121,8 @@ class _DetailsContent extends StatelessWidget {
         const SizedBox(height: 12),
         _TextSection(title: 'Faits notables', content: deputy.faitsNotablesIa),
         const SizedBox(height: 16),
+        _PoliticalProfileSection(deputy: deputy),
+        const SizedBox(height: 16),
         _StatsSection(deputy: deputy),
         const SizedBox(height: 16),
         OutlinedButton.icon(
@@ -413,6 +415,131 @@ class _StatsSection extends StatelessWidget {
               ),
             );
           },
+        ),
+      ],
+    );
+  }
+}
+
+class _PoliticalProfileSection extends StatelessWidget {
+  const _PoliticalProfileSection({required this.deputy});
+
+  final Deputy deputy;
+
+  @override
+  Widget build(BuildContext context) {
+    final topTopics = deputy.topTopics;
+    final proximityRate = deputy.groupProximityRate;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Profil politique', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 10),
+            _InfoRow(
+              label: 'Vote frequent',
+              value: _voteLabel(deputy.mostFrequentVote, deputy.mostFrequentVoteCount),
+            ),
+            _InfoRow(
+              label: 'Proximite groupe',
+              value: _proximityLabel(deputy.groupProximityRate, deputy.groupProximityVotesCount),
+            ),
+            const SizedBox(height: 6),
+            _ProximityGauge(rate: proximityRate),
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: 'Presence',
+              value: _percent(deputy.politicalPresenceRate),
+            ),
+            _InfoRow(
+              label: 'Loyaute',
+              value: _percent(deputy.politicalLoyaltyRate),
+            ),
+            const SizedBox(height: 8),
+            Text('Top sujets votes', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 6),
+            if (topTopics.isEmpty)
+              const Text('Aucun sujet disponible.')
+            else
+              ...topTopics.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text('• ${item.label} (${item.count})'),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+    String _voteLabel(String? raw, int? count) {
+      final base = switch ((raw ?? '').toUpperCase()) {
+        'POUR' => 'Pour',
+        'CONTRE' => 'Contre',
+        'ABSTENTION' => 'Abstention',
+        'NON_VOTANT' => 'Non votant',
+        _ => '-',
+      };
+
+      if (base == '-' || count == null) {
+        return base;
+      }
+
+      return '$base ($count)';
+    }
+
+    String _proximityLabel(double? rate, int? sample) {
+      if (rate == null || sample == null || sample <= 0) {
+        return '-';
+      }
+
+      return '${rate.toStringAsFixed(1)}% ($sample votes)';
+    }
+
+    String _percent(int? value) {
+      if (value == null) {
+        return '-';
+      }
+
+      return '$value%';
+    }
+  }
+
+class _ProximityGauge extends StatelessWidget {
+  const _ProximityGauge({required this.rate});
+
+  final double? rate;
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = rate == null ? null : (rate!.clamp(0, 100) / 100);
+    final color = normalized == null
+        ? Theme.of(context).colorScheme.outlineVariant
+        : Color.lerp(const Color(0xFFD32F2F), const Color(0xFF2E7D32), normalized) ??
+            Theme.of(context).colorScheme.primary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            value: normalized,
+            minHeight: 10,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          normalized == null ? 'Pas assez de votes communs pour calculer' : '${(normalized * 100).toStringAsFixed(1)}%',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.outline,
+              ),
         ),
       ],
     );

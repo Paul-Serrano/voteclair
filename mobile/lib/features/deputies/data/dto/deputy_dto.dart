@@ -26,6 +26,13 @@ class DeputyDto {
     this.statsAmendements,
     this.statsAmendementsAdoptes,
     this.statsQuestions,
+    this.mostFrequentVote,
+    this.mostFrequentVoteCount,
+    this.groupProximityRate,
+    this.groupProximityVotesCount,
+    this.topTopics = const <DeputyTopicStat>[],
+    this.politicalPresenceRate,
+    this.politicalLoyaltyRate,
   });
 
   final String slug;
@@ -52,11 +59,19 @@ class DeputyDto {
   final int? statsAmendements;
   final int? statsAmendementsAdoptes;
   final int? statsQuestions;
+  final String? mostFrequentVote;
+  final int? mostFrequentVoteCount;
+  final double? groupProximityRate;
+  final int? groupProximityVotesCount;
+  final List<DeputyTopicStat> topTopics;
+  final int? politicalPresenceRate;
+  final int? politicalLoyaltyRate;
 
   factory DeputyDto.fromJson(Map<String, dynamic> json) {
     final group = json['group'] as Map<String, dynamic>?;
     final circonscription = json['circonscription'] as Map<String, dynamic>?;
     final stats = json['stats'] as Map<String, dynamic>?;
+    final politicalProfile = json['political_profile'] as Map<String, dynamic>?;
 
     return DeputyDto(
       slug: (json['slug'] as String?) ?? '',
@@ -83,6 +98,19 @@ class DeputyDto {
       statsAmendements: _asInt(stats?['amendements']),
       statsAmendementsAdoptes: _asInt(stats?['amendements_adoptes']),
       statsQuestions: _asInt(stats?['questions']),
+      mostFrequentVote: politicalProfile?['most_frequent_vote'] as String?,
+      mostFrequentVoteCount: _asInt(politicalProfile?['most_frequent_vote_count']),
+      groupProximityRate: _asDouble(politicalProfile?['group_proximity_rate']),
+      groupProximityVotesCount: _asInt(politicalProfile?['group_proximity_votes_count']),
+      topTopics: (politicalProfile?['top_topics'] as List<dynamic>? ?? const <dynamic>[])
+          .whereType<Map<String, dynamic>>()
+          .map((item) => DeputyTopicStat(
+                label: (item['label'] as String?) ?? '',
+                count: _asInt(item['count']) ?? 0,
+              ))
+          .toList(growable: false),
+      politicalPresenceRate: _asInt(politicalProfile?['presence_rate']),
+      politicalLoyaltyRate: _asInt(politicalProfile?['loyalty_rate']),
     );
   }
 
@@ -112,6 +140,13 @@ class DeputyDto {
       statsAmendements: statsAmendements,
       statsAmendementsAdoptes: statsAmendementsAdoptes,
       statsQuestions: statsQuestions,
+      mostFrequentVote: mostFrequentVote,
+      mostFrequentVoteCount: mostFrequentVoteCount,
+      groupProximityRate: groupProximityRate,
+      groupProximityVotesCount: groupProximityVotesCount,
+      topTopics: topTopics,
+      politicalPresenceRate: politicalPresenceRate,
+      politicalLoyaltyRate: politicalLoyaltyRate,
     );
   }
 
@@ -124,6 +159,19 @@ class DeputyDto {
     }
     if (value is String) {
       return int.tryParse(value);
+    }
+    return null;
+  }
+
+  static double? _asDouble(dynamic value) {
+    if (value is double) {
+      return value;
+    }
+    if (value is num) {
+      return value.toDouble();
+    }
+    if (value is String) {
+      return double.tryParse(value);
     }
     return null;
   }
