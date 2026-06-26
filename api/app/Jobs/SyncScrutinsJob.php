@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Services\Clair\ClairApiClient;
 use App\Services\Scrutins\ImportanceScoringService;
 use App\Services\Sync\SyncStateService;
+use App\Support\Scrutins\ScrutinSourceUrlNormalizer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -61,7 +62,9 @@ class SyncScrutinsJob extends BaseSyncJob
                     'nombre_contre' => (int) ($item['nombreContre'] ?? 0),
                     'nombre_abstention' => (int) ($item['nombreAbstention'] ?? 0),
                     'demandeur_texte' => $this->nullableString($item['demandeurTexte'] ?? null),
-                    'source_url' => $this->nullableString($item['sourceUrl'] ?? null),
+                    'source_url' => ScrutinSourceUrlNormalizer::normalize(
+                        $this->nullableString($item['sourceUrl'] ?? null)
+                    ),
                     'dossier_titre' => $this->nullableString($item['dossier']['titre'] ?? null),
                     'dossier_url' => $this->nullableString($item['dossier']['url'] ?? null),
                     'resume_ia' => $this->nullableString($item['resumeIA'] ?? null),

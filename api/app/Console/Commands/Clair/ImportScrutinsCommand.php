@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Clair;
 
+use App\Support\Scrutins\ScrutinSourceUrlNormalizer;
 use Illuminate\Support\Facades\DB;
 
 class ImportScrutinsCommand extends BaseClairImportCommand
@@ -57,7 +58,9 @@ class ImportScrutinsCommand extends BaseClairImportCommand
                         'nombre_contre' => (int) ($item['nombreContre'] ?? 0),
                         'nombre_abstention' => (int) ($item['nombreAbstention'] ?? 0),
                         'demandeur_texte' => $this->nullableString($item['demandeurTexte'] ?? null),
-                        'source_url' => $this->nullableString($item['sourceUrl'] ?? null),
+                        'source_url' => ScrutinSourceUrlNormalizer::normalize(
+                            $this->nullableString($item['sourceUrl'] ?? null)
+                        ),
                         'dossier_titre' => $this->nullableString($item['dossier']['titre'] ?? null),
                         'dossier_url' => $this->nullableString($item['dossier']['url'] ?? null),
                         'resume_ia' => $this->nullableString($item['resumeIA'] ?? null),

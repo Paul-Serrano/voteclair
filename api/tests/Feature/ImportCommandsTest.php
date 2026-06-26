@@ -171,7 +171,7 @@ class ImportCommandsTest extends TestCase
                     'titre' => 'Scrutin test',
                     'sort' => 'rejete',
                     'demandeurTexte' => 'Demandeur',
-                    'sourceUrl' => 'https://example.test/scrutins/7407',
+                    'sourceUrl' => 'https://www.assemblee-nationale.fr/dyn/17/scrutins/VTANR5L17V7407',
                     'dossier' => ['titre' => 'Dossier test', 'url' => 'https://example.test/dossier'],
                     'resumeIA' => 'Resume',
                 ],
@@ -185,6 +185,7 @@ class ImportCommandsTest extends TestCase
             'id' => 'scr-1',
             'numero' => 7407,
             'sort' => 'REJETE',
+            'source_url' => 'https://www.assemblee-nationale.fr/dyn/17/scrutins/7407',
         ]);
     }
 

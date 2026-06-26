@@ -370,6 +370,7 @@ class SyncJobsTest extends TestCase
                         'updatedAt' => '2026-06-16T00:00:00.000Z',
                         'titre' => 'Scrutin test',
                         'sort' => 'adopte',
+                        'sourceUrl' => 'https://www.assemblee-nationale.fr/dyn/17/scrutins/VTANR5L17V7407',
                         'nombreVotants' => 10,
                         'nombrePour' => 6,
                         'nombreContre' => 3,
@@ -394,6 +395,7 @@ class SyncJobsTest extends TestCase
                         'updatedAt' => '2026-06-18T00:00:00.000Z',
                         'titre' => 'Scrutin test (maj)',
                         'sort' => 'REJETE',
+                        'sourceUrl' => 'https://www.assemblee-nationale.fr/dyn/17/scrutins/VTANR5L17V7407',
                         'nombreVotants' => 12,
                         'nombrePour' => 4,
                         'nombreContre' => 7,
@@ -426,6 +428,7 @@ class SyncJobsTest extends TestCase
             'titre' => 'Scrutin test (maj)',
             'sort' => 'REJETE',
             'nombre_votants' => 12,
+            'source_url' => 'https://www.assemblee-nationale.fr/dyn/17/scrutins/7407',
         ]);
         $this->assertDatabaseHas('scrutins', [
             'id' => 'scr-2',
