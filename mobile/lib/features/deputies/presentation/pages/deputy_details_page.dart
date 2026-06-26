@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/services/external_url_launcher.dart';
 import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../domain/entities/deputy.dart';
 import '../providers/deputy_details_provider.dart';
@@ -167,7 +167,7 @@ class _DetailsContent extends StatelessWidget {
 
   Future<void> _openXProfile(BuildContext context, String handle) async {
     final uri = Uri.parse('https://x.com/$handle');
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final launched = await openExternalUrl(uri);
 
     if (!launched && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

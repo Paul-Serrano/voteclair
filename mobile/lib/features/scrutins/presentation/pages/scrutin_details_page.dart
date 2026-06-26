@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/services/external_url_launcher.dart';
 import '../../domain/entities/scrutin_vote.dart';
 import '../providers/scrutin_details_provider.dart';
 import '../providers/scrutin_votes_provider.dart';
@@ -262,7 +262,7 @@ class _ScrutinDetailsPageState extends ConsumerState<ScrutinDetailsPage> {
   }
 
   Future<void> _openSource(String url) async {
-    final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    final launched = await openExternalUrl(Uri.parse(url));
     if (!launched && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Impossible d\'ouvrir le lien source.')),
