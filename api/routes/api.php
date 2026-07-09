@@ -1,13 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\FindMyDeputyController;
 use App\Http\Controllers\Api\DeputyController;
 use App\Http\Controllers\Api\FavoriteActivityController;
+use App\Http\Controllers\Api\FindMyDeputyController;
 use App\Http\Controllers\Api\GroupController;
 use App\Http\Controllers\Api\ImportantScrutinController;
-use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ScrutinController;
+use App\Http\Controllers\Api\SearchController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [DashboardController::class, 'index']);

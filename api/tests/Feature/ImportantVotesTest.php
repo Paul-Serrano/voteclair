@@ -23,7 +23,7 @@ class ImportantVotesTest extends TestCase
     {
         $service = app(ImportanceScoringService::class);
 
-        $scrutin = new Scrutin();
+        $scrutin = new Scrutin;
         $scrutin->titre = 'Motion de censure sur le budget de la constitution';
         $scrutin->demandeur_texte = 'Vote solennel';
         $scrutin->nombre_pour = 255;

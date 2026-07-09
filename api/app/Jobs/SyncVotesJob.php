@@ -63,6 +63,7 @@ class SyncVotesJob extends BaseSyncJob
 
                 if (! $scrutinId) {
                     $unknownScrutins++;
+
                     continue;
                 }
 
@@ -75,6 +76,7 @@ class SyncVotesJob extends BaseSyncJob
 
                 if ($positionRows !== []) {
                     $rows = array_merge($rows, $positionRows);
+
                     continue;
                 }
 
@@ -149,6 +151,7 @@ class SyncVotesJob extends BaseSyncJob
                 $deputyId = $deputyBySlug[$slug] ?? null;
                 if (! $deputyId) {
                     $unknownDeputies++;
+
                     continue;
                 }
 
@@ -213,7 +216,6 @@ class SyncVotesJob extends BaseSyncJob
     }
 
     /**
-     * @param  mixed  $positionNode
      * @param  array<string, string>  $deputyBySlug
      * @param  array<string, string>  $deputyByActorRef
      * @return array<int, array<string, mixed>>
@@ -259,6 +261,7 @@ class SyncVotesJob extends BaseSyncJob
 
             if (! $deputyId) {
                 $unknownDeputies++;
+
                 continue;
             }
 

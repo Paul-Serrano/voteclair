@@ -1,8 +1,12 @@
 <?php
+
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
+
 require 'vendor/autoload.php';
 $app = require 'bootstrap/app.php';
-$kernel = $app->make(\Illuminate\Contracts\Http\Kernel::class);
+$kernel = $app->make(Kernel::class);
 $response = $kernel->handle(
-    $request = \Illuminate\Http\Request::create('/api/dashboard', 'GET')
+    $request = Request::create('/api/dashboard', 'GET')
 );
 echo $response->getContent();

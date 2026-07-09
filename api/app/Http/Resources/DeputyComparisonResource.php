@@ -18,22 +18,22 @@ class DeputyComparisonResource extends JsonResource
 
         $normalizeVoteRows = static function ($rows): array {
             return collect($rows ?? [])
-            ->map(function ($item): array {
-                $row = (array) $item;
+                ->map(function ($item): array {
+                    $row = (array) $item;
 
-                return [
-                    'scrutin_id' => (string) ($row['scrutin_id'] ?? ''),
-                    'numero' => (int) ($row['numero'] ?? 0),
-                    'titre' => (string) ($row['titre'] ?? ''),
-                    'date' => (string) ($row['date'] ?? ''),
-                    'scrutin_sort' => (string) ($row['scrutin_sort'] ?? ''),
-                    'importance_score' => (int) ($row['importance_score'] ?? 0),
-                    'left_vote' => (string) ($row['left_vote'] ?? ''),
-                    'right_vote' => (string) ($row['right_vote'] ?? ''),
-                ];
-            })
-            ->values()
-            ->all();
+                    return [
+                        'scrutin_id' => (string) ($row['scrutin_id'] ?? ''),
+                        'numero' => (int) ($row['numero'] ?? 0),
+                        'titre' => (string) ($row['titre'] ?? ''),
+                        'date' => (string) ($row['date'] ?? ''),
+                        'scrutin_sort' => (string) ($row['scrutin_sort'] ?? ''),
+                        'importance_score' => (int) ($row['importance_score'] ?? 0),
+                        'left_vote' => (string) ($row['left_vote'] ?? ''),
+                        'right_vote' => (string) ($row['right_vote'] ?? ''),
+                    ];
+                })
+                ->values()
+                ->all();
         };
 
         $recentCommonVotes = $normalizeVoteRows($this->resource['recent_common_votes'] ?? []);

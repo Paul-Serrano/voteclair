@@ -62,12 +62,14 @@ class SyncDeputiesJob extends BaseSyncJob
 
                 if (! $groupId || ! isset($groupById[$groupId])) {
                     $skipped++;
+
                     continue;
                 }
 
                 $sourceId = $this->nullableString($item['sourceId'] ?? null);
                 if ($sourceId === null) {
                     $skipped++;
+
                     continue;
                 }
 
