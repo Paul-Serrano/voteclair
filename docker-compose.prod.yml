@@ -1,0 +1,49 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: infra/docker/prod/Dockerfile
+    container_name: voteclair-prod-app
+    env_file:
+      - api/.env.production.example
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8081:80"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - voteclair_prod
+
+  postgres:
+    image: postgres:17
+    container_name: voteclair-prod-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: voteclair
+      POSTGRES_USER: voteclair
+      POSTGRES_PASSWORD: change-me
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - voteclair_prod
+
+  redis:
+    image: redis:8-alpine
+    container_name: voteclair-prod-redis
+    restart: unless-stopped
+    networks:
+      - voteclair_prod
+
+volumes:
+  postgres_prod_data:
+
+networks:
+  voteclair_prod:
+    driver: bridge
