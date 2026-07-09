@@ -111,4 +111,5 @@ jobs:
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
       - name: Build production Docker image
-        run: docker build -f infra/docker/prod/Dockerfile -t voteclair-production-ci ..
+        working-directory: .
+        run: docker build -f infra/docker/prod/Dockerfile -t voteclair-production-ci .
