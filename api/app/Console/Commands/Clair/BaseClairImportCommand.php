@@ -155,7 +155,6 @@ abstract class BaseClairImportCommand extends Command
     }
 
     /**
-     * @param  mixed  $payload
      * @return array<int, array<string, mixed>>
      */
     protected function extractItemsFromPayload(mixed $payload): array

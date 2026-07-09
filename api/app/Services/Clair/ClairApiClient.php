@@ -15,12 +15,12 @@ class ClairApiClient
 {
     public function client(): PendingRequest
     {
-        $baseUrl = rtrim((string) env('CLAIR_API_BASE_URL', 'https://clair-production.up.railway.app'), '/');
+        $baseUrl = rtrim((string) config('services.clair.base_url', 'https://clair-production.up.railway.app'), '/');
 
         return Http::baseUrl($baseUrl)
             ->acceptJson()
-            ->connectTimeout((int) env('CLAIR_API_CONNECT_TIMEOUT', 10))
-            ->timeout((int) env('CLAIR_API_TIMEOUT', 30))
+            ->connectTimeout((int) config('services.clair.connect_timeout', 10))
+            ->timeout((int) config('services.clair.timeout', 30))
             ->retry(
                 1,
                 0,
@@ -47,7 +47,7 @@ class ClairApiClient
                 'chambre' => $chamber,
                 'updatedSince' => $since->format(DATE_ATOM),
             ],
-            max(1, (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5)),
+            max(1, (int) config('services.clair.incremental_recent_pages', 5)),
         );
     }
 
@@ -70,7 +70,7 @@ class ClairApiClient
                 'chambre' => $chamber,
                 'updatedSince' => $since->format(DATE_ATOM),
             ],
-            max(1, (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5)),
+            max(1, (int) config('services.clair.incremental_recent_pages', 5)),
         );
     }
 
@@ -93,7 +93,7 @@ class ClairApiClient
                 'chambre' => $chamber,
                 'updatedSince' => $since->format(DATE_ATOM),
             ],
-            max(1, (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5)),
+            max(1, (int) config('services.clair.incremental_recent_pages', 5)),
         );
     }
 
@@ -123,7 +123,7 @@ class ClairApiClient
                     'chambre' => $chamber,
                     'updatedSince' => $since->format(DATE_ATOM),
                 ],
-                max(1, (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5)),
+                max(1, (int) config('services.clair.incremental_recent_pages', 5)),
             ) as $items
         ) {
             foreach ($items as $item) {
@@ -154,10 +154,10 @@ class ClairApiClient
      */
     private function paginate(string $path, array $query = [], ?int $maxPagesOverride = null): \Generator
     {
-        $pageParam = (string) env('CLAIR_API_PAGE_PARAM', 'page');
-        $limitParam = (string) env('CLAIR_API_LIMIT_PARAM', 'limit');
-        $pageSize = max(1, (int) env('CLAIR_API_PAGE_SIZE', 100));
-        $defaultMaxPages = max(1, (int) env('CLAIR_API_MAX_PAGES', 500));
+        $pageParam = (string) config('services.clair.page_param', 'page');
+        $limitParam = (string) config('services.clair.limit_param', 'limit');
+        $pageSize = max(1, (int) config('services.clair.page_size', 100));
+        $defaultMaxPages = max(1, (int) config('services.clair.max_pages', 500));
         $maxPages = $maxPagesOverride === null
             ? $defaultMaxPages
             : max(1, min($defaultMaxPages, $maxPagesOverride));
@@ -199,8 +199,8 @@ class ClairApiClient
      */
     private function requestJson(string $path, array $query = []): array
     {
-        $maxAttempts = max(1, (int) env('CLAIR_API_MAX_ATTEMPTS', 4));
-        $baseBackoffMs = max(100, (int) env('CLAIR_API_BACKOFF_MS', 1000));
+        $maxAttempts = max(1, (int) config('services.clair.max_attempts', 4));
+        $baseBackoffMs = max(100, (int) config('services.clair.backoff_ms', 1000));
 
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             $response = $this->client()->get($path, $query);
@@ -253,14 +253,13 @@ class ClairApiClient
 
     private function throttle(): void
     {
-        $throttleMs = max(0, (int) env('CLAIR_API_THROTTLE_MS', 6500));
+        $throttleMs = max(0, (int) config('services.clair.throttle_ms', 6500));
         if ($throttleMs > 0) {
             usleep($throttleMs * 1000);
         }
     }
 
     /**
-     * @param  mixed  $payload
      * @return array<int, array<string, mixed>>
      */
     private function extractItemsFromPayload(mixed $payload): array
@@ -327,7 +326,6 @@ class ClairApiClient
     }
 
     /**
-     * @param  mixed  $payload
      * @return array<int, array<string, mixed>>
      */
     private function normalizeVotesPayload(mixed $payload): array

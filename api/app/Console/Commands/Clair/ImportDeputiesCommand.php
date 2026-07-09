@@ -59,6 +59,7 @@ class ImportDeputiesCommand extends BaseClairImportCommand
 
                 if (! $groupId || ! isset($groupById[$groupId])) {
                     $skipped++;
+
                     continue;
                 }
 

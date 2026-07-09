@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Scrutin;
 use App\Services\Clair\ClairApiClient;
 use App\Services\Scrutins\ImportanceScoringService;
 use App\Services\Sync\SyncStateService;
@@ -15,8 +16,7 @@ class SyncScrutinsJob extends BaseSyncJob
         ClairApiClient $client,
         SyncStateService $syncStateService,
         ImportanceScoringService $importanceScoringService,
-    ): void
-    {
+    ): void {
         $chamber = $this->chamber();
         $institutionId = $this->institutionIdForChamber($chamber);
         $stateKey = 'last_scrutins_sync';
@@ -133,7 +133,7 @@ class SyncScrutinsJob extends BaseSyncJob
             ->get(['id', 'titre', 'demandeur_texte', 'nombre_pour', 'nombre_contre', 'importance_score']);
 
         foreach ($scrutins as $row) {
-            $scrutin = new \App\Models\Scrutin();
+            $scrutin = new Scrutin;
             $scrutin->id = (string) $row->id;
             $scrutin->titre = (string) ($row->titre ?? '');
             $scrutin->demandeur_texte = $row->demandeur_texte;

@@ -2,6 +2,9 @@
 
 > Comprendre simplement comment votent vos deputes.
 
+[![Backend CI](https://github.com/Paul-Serrano/voteclair/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Paul-Serrano/voteclair/actions/workflows/ci.yml)
+[![Deploy Render](https://github.com/Paul-Serrano/voteclair/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/Paul-Serrano/voteclair/actions/workflows/deploy.yml)
+
 VoteClair est un projet de transparence democratique qui transforme les donnees parlementaires en informations lisibles, recherchables et reutilisables. Le repository contient aujourd'hui le backend Laravel, la stack locale Docker et la documentation de reference du projet.
 
 Le MVP cible d'abord l'Assemblee nationale. Le modele de donnees et l'architecture ont ete prepares pour pouvoir etendre ensuite le projet a d'autres chambres, comme le Senat ou le Parlement europeen.

@@ -22,10 +22,10 @@ class SyncParliamentDataCommand extends Command
         Log::channel('voteclair')->info('Sync started');
 
         Bus::chain([
-            new SyncGroupsJob(),
-            new SyncDeputiesJob(),
-            new SyncScrutinsJob(),
-            new SyncVotesJob(),
+            new SyncGroupsJob,
+            new SyncDeputiesJob,
+            new SyncScrutinsJob,
+            new SyncVotesJob,
         ])
             ->catch(function (Throwable $exception): void {
                 Log::channel('voteclair')->error('Sync failed', [

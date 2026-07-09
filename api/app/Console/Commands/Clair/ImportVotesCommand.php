@@ -109,6 +109,7 @@ class ImportVotesCommand extends BaseClairImportCommand
 
                     if (! $scrutinId) {
                         $unknownScrutins++;
+
                         continue;
                     }
 
@@ -123,6 +124,7 @@ class ImportVotesCommand extends BaseClairImportCommand
                     // double-processing the same vote data from multiple payload representations.
                     if (! empty($positionRows)) {
                         $rows = array_merge($rows, $positionRows);
+
                         continue;
                     }
 
@@ -175,7 +177,6 @@ class ImportVotesCommand extends BaseClairImportCommand
     }
 
     /**
-     * @param  mixed  $payload
      * @return array<int, array<string, mixed>>
      */
     private function normalizeVotesPayload(mixed $payload): array
@@ -245,6 +246,7 @@ class ImportVotesCommand extends BaseClairImportCommand
                 $deputyId = $deputyBySlug[$slug] ?? null;
                 if (! $deputyId) {
                     $unknownDeputies++;
+
                     continue;
                 }
 
@@ -309,7 +311,6 @@ class ImportVotesCommand extends BaseClairImportCommand
     }
 
     /**
-     * @param  mixed  $positionNode
      * @param  array<string, string>  $deputyBySlug
      * @param  array<string, string>  $deputyByActorRef
      * @return array<int, array<string, mixed>>
@@ -355,6 +356,7 @@ class ImportVotesCommand extends BaseClairImportCommand
 
             if (! $deputyId) {
                 $unknownDeputies++;
+
                 continue;
             }
 

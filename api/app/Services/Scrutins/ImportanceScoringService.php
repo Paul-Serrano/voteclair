@@ -23,14 +23,14 @@ class ImportanceScoringService
     {
         // Extensible: adding new criteria only requires a new rule and registration here.
         $this->rules = $rules ?? [
-            new SolennelImportanceRule(),
+            new SolennelImportanceRule,
             new KeywordImportanceRule(['censure'], 100),
             new KeywordImportanceRule(['finances', 'budget'], 80),
             new KeywordImportanceRule(['retraites'], 70),
             new KeywordImportanceRule(['immigration'], 70),
             new KeywordImportanceRule(['constitution', 'constitutionnelle'], 90),
-            new HighParticipationImportanceRule(),
-            new TightResultImportanceRule(),
+            new HighParticipationImportanceRule,
+            new TightResultImportanceRule,
         ];
     }
 

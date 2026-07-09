@@ -59,7 +59,7 @@ class DashboardController extends Controller
                         ->orderByDesc('date')
                         ->first();
 
-                    if (!$lastScrutin) {
+                    if (! $lastScrutin) {
                         return ['last_scrutin_date' => null, 'last_scrutin_title' => null];
                     }
 

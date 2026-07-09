@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    'clair' => [
+        'base_url' => env('CLAIR_API_BASE_URL', 'https://clair-production.up.railway.app'),
+        'connect_timeout' => (int) env('CLAIR_API_CONNECT_TIMEOUT', 10),
+        'timeout' => (int) env('CLAIR_API_TIMEOUT', 30),
+        'incremental_recent_pages' => (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5),
+        'page_param' => env('CLAIR_API_PAGE_PARAM', 'page'),
+        'limit_param' => env('CLAIR_API_LIMIT_PARAM', 'limit'),
+        'page_size' => (int) env('CLAIR_API_PAGE_SIZE', 100),
+        'max_pages' => (int) env('CLAIR_API_MAX_PAGES', 500),
+        'max_attempts' => (int) env('CLAIR_API_MAX_ATTEMPTS', 4),
+        'backoff_ms' => (int) env('CLAIR_API_BACKOFF_MS', 1000),
+        'throttle_ms' => (int) env('CLAIR_API_THROTTLE_MS', 6500),
+    ],
+
 ];

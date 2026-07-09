@@ -108,7 +108,7 @@ class ScrutinResource extends JsonResource
             ->map(function (EloquentCollection $groupDeputies, string $groupSlug) use ($votesByGroup): array {
                 $firstDeputy = $groupDeputies->first();
                 $group = $firstDeputy?->group;
-                $groupVotes = $votesByGroup->get($groupSlug, new EloquentCollection());
+                $groupVotes = $votesByGroup->get($groupSlug, new EloquentCollection);
                 $votedDeputies = $groupVotes->pluck('deputy.id')->filter()->unique()->count();
                 $groupTotal = $groupDeputies->count();
 

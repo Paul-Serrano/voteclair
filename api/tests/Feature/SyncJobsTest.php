@@ -151,7 +151,7 @@ class SyncJobsTest extends TestCase
                 ], 200),
         ]);
 
-        $job = new SyncGroupsJob();
+        $job = new SyncGroupsJob;
         $client = app(ClairApiClient::class);
         $state = app(SyncStateService::class);
 
@@ -213,7 +213,7 @@ class SyncJobsTest extends TestCase
             ->with('voteclair')
             ->andReturn($logger);
 
-        (new SyncGroupsJob())->handle(app(ClairApiClient::class), app(SyncStateService::class));
+        (new SyncGroupsJob)->handle(app(ClairApiClient::class), app(SyncStateService::class));
     }
 
     public function test_sync_deputies_job_upserts_deputies_and_circonscriptions(): void
@@ -293,7 +293,7 @@ class SyncJobsTest extends TestCase
                 ], 200),
         ]);
 
-        $job = new SyncDeputiesJob();
+        $job = new SyncDeputiesJob;
         $client = app(ClairApiClient::class);
         $state = app(SyncStateService::class);
 
@@ -345,7 +345,7 @@ class SyncJobsTest extends TestCase
             ], 200),
         ]);
 
-        (new SyncDeputiesJob())->handle(app(ClairApiClient::class), app(SyncStateService::class));
+        (new SyncDeputiesJob)->handle(app(ClairApiClient::class), app(SyncStateService::class));
 
         $this->assertDatabaseCount('deputies', 1);
         $this->assertDatabaseHas('deputies', [
@@ -413,7 +413,7 @@ class SyncJobsTest extends TestCase
                 ], 200),
         ]);
 
-        $job = new SyncScrutinsJob();
+        $job = new SyncScrutinsJob;
         $client = app(ClairApiClient::class);
         $state = app(SyncStateService::class);
         $importanceScoringService = app(ImportanceScoringService::class);
@@ -470,7 +470,7 @@ class SyncJobsTest extends TestCase
                 ], 200),
         ]);
 
-        $job = new SyncVotesJob();
+        $job = new SyncVotesJob;
         $client = app(ClairApiClient::class);
         $state = app(SyncStateService::class);
 
@@ -526,7 +526,7 @@ class SyncJobsTest extends TestCase
             ], 200),
         ]);
 
-        (new SyncVotesJob())->handle(app(ClairApiClient::class), app(SyncStateService::class));
+        (new SyncVotesJob)->handle(app(ClairApiClient::class), app(SyncStateService::class));
 
         $this->assertDatabaseCount('votes', 1);
         $this->assertDatabaseHas('votes', [
@@ -588,7 +588,7 @@ class SyncJobsTest extends TestCase
             '*/api/v1/scrutins/10' => Http::response(['data' => []], 200),
         ]);
 
-        (new SyncVotesJob())->handle(app(ClairApiClient::class), app(SyncStateService::class));
+        (new SyncVotesJob)->handle(app(ClairApiClient::class), app(SyncStateService::class));
 
         $recorded = Http::recorded();
         $this->assertGreaterThanOrEqual(2, $recorded->count());
@@ -627,7 +627,7 @@ class SyncJobsTest extends TestCase
         $state = app(SyncStateService::class);
 
         try {
-            (new SyncGroupsJob())->handle(app(ClairApiClient::class), $state);
+            (new SyncGroupsJob)->handle(app(ClairApiClient::class), $state);
             $this->fail('Expected a RuntimeException to be thrown.');
         } catch (RuntimeException) {
             $this->assertNull($state->get('last_groups_sync'));
@@ -710,7 +710,7 @@ class SyncJobsTest extends TestCase
             ], 200),
         ]);
 
-        (new SyncGroupsJob())->handle(app(ClairApiClient::class), $state);
+        (new SyncGroupsJob)->handle(app(ClairApiClient::class), $state);
 
         $this->assertDatabaseCount('groups', 1);
         $this->assertDatabaseHas('groups', [
@@ -753,7 +753,7 @@ class SyncJobsTest extends TestCase
             ], 200),
         ]);
 
-        (new SyncDeputiesJob())->handle(app(ClairApiClient::class), $state);
+        (new SyncDeputiesJob)->handle(app(ClairApiClient::class), $state);
 
         $this->assertDatabaseCount('deputies', 1);
         $this->assertDatabaseHas('deputies', [
@@ -794,7 +794,7 @@ class SyncJobsTest extends TestCase
             ], 200),
         ]);
 
-        (new SyncScrutinsJob())->handle(
+        (new SyncScrutinsJob)->handle(
             app(ClairApiClient::class),
             $state,
             app(ImportanceScoringService::class),
@@ -824,7 +824,7 @@ class SyncJobsTest extends TestCase
         $state = app(SyncStateService::class);
 
         try {
-            (new SyncScrutinsJob())->handle(
+            (new SyncScrutinsJob)->handle(
                 app(ClairApiClient::class),
                 $state,
                 app(ImportanceScoringService::class),
@@ -852,7 +852,7 @@ class SyncJobsTest extends TestCase
         $state = app(SyncStateService::class);
 
         try {
-            (new SyncVotesJob())->handle(app(ClairApiClient::class), $state);
+            (new SyncVotesJob)->handle(app(ClairApiClient::class), $state);
             $this->fail('Expected a RuntimeException to be thrown.');
         } catch (RuntimeException) {
             $this->assertNull($state->get('last_votes_sync'));
