@@ -243,7 +243,7 @@ class ImportCommandsTest extends TestCase
     {
         Schema::disableForeignKeyConstraints();
 
-        foreach (['votes', 'scrutins', 'deputies', 'circonscriptions', 'groups', 'institutions'] as $table) {
+        foreach (['votes', 'postal_codes', 'scrutins', 'deputies', 'circonscriptions', 'groups', 'institutions'] as $table) {
             Schema::dropIfExists($table);
         }
 

@@ -75,12 +75,13 @@ REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 ```
 
-Les tests continuent d'utiliser un cache `array` et une queue `sync` pour rester deterministes, tout en validant le backend sur PostgreSQL.
+Les tests utilisent PostgreSQL 17 avec un cache `array` et une queue `sync` pour rester deterministes sur les couches non metier.
 
-La pipeline valide donc deux choses distinctes:
+La pipeline valide donc de bout en bout:
 
-- le bootstrap Laravel et les migrations sur PostgreSQL 17;
-- la suite de tests applicatifs actuelle sur SQLite en memoire, qui reste aujourd'hui le mode stable du projet.
+- le bootstrap Laravel sur PostgreSQL;
+- les migrations sur PostgreSQL;
+- la suite de tests applicatifs sur PostgreSQL.
 
 ## Preparation Laravel
 

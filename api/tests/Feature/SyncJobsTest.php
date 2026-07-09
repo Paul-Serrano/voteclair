@@ -940,7 +940,7 @@ class SyncJobsTest extends TestCase
     {
         Schema::disableForeignKeyConstraints();
 
-        foreach (['votes', 'scrutins', 'deputies', 'circonscriptions', 'groups', 'institutions', 'sync_states'] as $table) {
+        foreach (['votes', 'postal_codes', 'scrutins', 'deputies', 'circonscriptions', 'groups', 'institutions', 'sync_states'] as $table) {
             Schema::dropIfExists($table);
         }
 

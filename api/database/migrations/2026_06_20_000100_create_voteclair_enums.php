@@ -7,9 +7,35 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("CREATE TYPE vote_position AS ENUM ('POUR', 'CONTRE', 'ABSTENTION', 'NON_VOTANT')");
-        DB::statement("CREATE TYPE political_position AS ENUM ('EXTREME_GAUCHE', 'GAUCHE', 'CENTRE_GAUCHE', 'CENTRE', 'CENTRE_DROIT', 'DROITE', 'EXTREME_DROITE')");
-        DB::statement("CREATE TYPE scrutin_result AS ENUM ('ADOPTE', 'REJETE')");
+        DB::unprepared(<<<'SQL'
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'vote_position') THEN
+                    CREATE TYPE vote_position AS ENUM ('POUR', 'CONTRE', 'ABSTENTION', 'NON_VOTANT');
+                END IF;
+            END
+            $$;
+        SQL);
+
+        DB::unprepared(<<<'SQL'
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'political_position') THEN
+                    CREATE TYPE political_position AS ENUM ('EXTREME_GAUCHE', 'GAUCHE', 'CENTRE_GAUCHE', 'CENTRE', 'CENTRE_DROIT', 'DROITE', 'EXTREME_DROITE');
+                END IF;
+            END
+            $$;
+        SQL);
+
+        DB::unprepared(<<<'SQL'
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'scrutin_result') THEN
+                    CREATE TYPE scrutin_result AS ENUM ('ADOPTE', 'REJETE');
+                END IF;
+            END
+            $$;
+        SQL);
     }
 
     public function down(): void
