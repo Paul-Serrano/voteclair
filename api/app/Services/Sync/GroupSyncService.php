@@ -3,6 +3,7 @@
 namespace App\Services\Sync;
 
 use App\Services\Clair\ClairApiClient;
+use Illuminate\Support\Facades\DB;
 
 class GroupSyncService extends BaseSyncService
 {
@@ -17,7 +18,6 @@ class GroupSyncService extends BaseSyncService
     public function sync(): array
     {
         $chamber = $this->chamber();
-        $institutionId = $this->institutionIdForChamber($chamber);
         $stateKey = 'last_groups_sync';
         $stateValue = $this->syncStateService->get($stateKey);
         $since = $this->parseStateDate($stateValue);
@@ -25,6 +25,7 @@ class GroupSyncService extends BaseSyncService
         $startedAt = microtime(true);
 
         $this->seedInstitutions();
+        $institutionId = $this->resolveInstitutionIdForChamber($chamber);
         $this->logInfo('Sync groups started', ['chamber' => $chamber, 'since' => $stateValue]);
 
         $processed = 0;
@@ -168,12 +169,30 @@ class GroupSyncService extends BaseSyncService
         ];
 
         $this->upsertInChunks('institutions', $rows, ['slug'], [
-            'id',
             'nom',
             'pays',
             'actif',
             'last_synced_at',
             'updated_at',
         ]);
+    }
+
+    private function resolveInstitutionIdForChamber(string $chamber): string
+    {
+        $slug = match (strtolower($chamber)) {
+            'assemblee' => 'assemblee-nationale',
+            'senat' => 'senat',
+            default => throw new \RuntimeException("Unsupported chamber: {$chamber}"),
+        };
+
+        $institutionId = DB::table('institutions')
+            ->where('slug', $slug)
+            ->value('id');
+
+        if (! is_string($institutionId) || trim($institutionId) === '') {
+            throw new \RuntimeException(sprintf('Institution slug "%s" not found after seeding.', $slug));
+        }
+
+        return $institutionId;
     }
 }
