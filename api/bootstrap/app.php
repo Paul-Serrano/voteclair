@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -15,9 +16,24 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function (): void {
             Route::get('/health', function () {
+                $redis = [
+                    'ok' => false,
+                    'message' => null,
+                ];
+
+                try {
+                    $ping = Redis::connection()->ping();
+
+                    $redis['ok'] = true;
+                    $redis['message'] = is_scalar($ping) ? (string) $ping : 'PONG';
+                } catch (\Throwable $exception) {
+                    $redis['message'] = $exception->getMessage();
+                }
+
                 return response()->json([
                     'status' => 'ok',
                     'version' => config('voteclair.version'),
+                    'redis' => $redis,
                 ]);
             });
         },
