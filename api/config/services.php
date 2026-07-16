@@ -42,7 +42,7 @@ return [
         'incremental_recent_pages' => (int) env('CLAIR_API_INCREMENTAL_RECENT_PAGES', 5),
         'page_param' => env('CLAIR_API_PAGE_PARAM', 'page'),
         'limit_param' => env('CLAIR_API_LIMIT_PARAM', 'limit'),
-        'page_size' => (int) env('CLAIR_API_PAGE_SIZE', 100),
+        'page_size' => (int) env('CLAIR_API_PAGE_SIZE', 50),
         'max_pages' => (int) env('CLAIR_API_MAX_PAGES', 500),
         'max_attempts' => (int) env('CLAIR_API_MAX_ATTEMPTS', 4),
         'backoff_ms' => (int) env('CLAIR_API_BACKOFF_MS', 1000),

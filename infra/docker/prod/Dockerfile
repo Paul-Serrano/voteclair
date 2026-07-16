@@ -39,6 +39,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && rm -f /etc/nginx/sites-enabled/default
 
+# Keep enough headroom for large initial sync jobs (scrutins/votes) in cron/worker contexts.
+RUN printf "memory_limit=512M\n" > /usr/local/etc/php/conf.d/zz-memory-limit.ini
+
 WORKDIR /var/www/html
 
 COPY api/artisan ./artisan
