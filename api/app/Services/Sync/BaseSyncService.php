@@ -11,7 +11,7 @@ abstract class BaseSyncService
 {
     protected function chamber(): string
     {
-        return (string) env('CLAIR_SYNC_CHAMBER', 'assemblee');
+        return (string) config('voteclair.sync.chamber', 'assemblee');
     }
 
     protected function institutionIdForChamber(string $chamber): string
@@ -106,7 +106,7 @@ abstract class BaseSyncService
             return 0;
         }
 
-        $batchSize = max(1, (int) env('CLAIR_SYNC_BATCH_SIZE', 100));
+        $batchSize = max(1, (int) config('voteclair.sync.batch_size', 100));
         $written = 0;
 
         foreach (array_chunk($rows, $batchSize) as $chunk) {

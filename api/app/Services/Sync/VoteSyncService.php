@@ -53,7 +53,7 @@ class VoteSyncService extends BaseSyncService
                 $numbers = array_map('intval', array_keys($scrutinIdByNumero));
                 rsort($numbers);
 
-                $limit = max(0, (int) env('CLAIR_SYNC_VOTES_LIMIT', 0));
+                $limit = max(0, (int) config('voteclair.sync.votes_limit', 0));
                 if ($limit > 0) {
                     $numbers = array_slice($numbers, 0, $limit);
                 }

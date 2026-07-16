@@ -3,6 +3,7 @@
 namespace App\Services\Sync;
 
 use App\Models\SystemStatus;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -22,7 +23,7 @@ class SystemStatusService
 
         $row->update([
             'api_version' => (string) config('voteclair.version'),
-            'clair_data_version' => (string) env('CLAIR_DATA_VERSION', 'unknown'),
+            'clair_data_version' => $this->clairDataVersion(),
             'database_status' => $infra['database_status'],
             'redis_status' => $infra['redis_status'],
             'queue_status' => $infra['queue_status'],
@@ -46,7 +47,7 @@ class SystemStatusService
 
         $payload = [
             'api_version' => (string) config('voteclair.version'),
-            'clair_data_version' => (string) env('CLAIR_DATA_VERSION', 'unknown'),
+            'clair_data_version' => $this->clairDataVersion(),
             'database_status' => $infra['database_status'],
             'redis_status' => $infra['redis_status'],
             'queue_status' => $infra['queue_status'],
@@ -78,13 +79,14 @@ class SystemStatusService
     public function healthPayload(): array
     {
         $row = $this->row();
+        $lastSync = $this->iso8601OrNull($row->last_successful_sync_at);
 
         return [
             'status' => $this->globalStatus($row),
             'database' => $row->database_status,
             'redis' => $row->redis_status,
             'queue' => $row->queue_status,
-            'last_sync' => $row->last_successful_sync_at?->toIso8601String(),
+            'last_sync' => $lastSync,
             'sync_status' => $row->last_sync_status,
             'api_version' => $row->api_version,
         ];
@@ -96,6 +98,7 @@ class SystemStatusService
     public function diagnosticSummary(): array
     {
         $row = $this->row();
+        $lastSync = $this->iso8601OrNull($row->last_successful_sync_at);
 
         return [
             'api' => $this->globalStatus($row),
@@ -104,7 +107,7 @@ class SystemStatusService
             'queue' => $row->queue_status,
             'api_version' => $row->api_version,
             'clair_version' => $row->clair_data_version,
-            'last_sync' => $row->last_successful_sync_at?->toIso8601String(),
+            'last_sync' => $lastSync,
             'last_sync_status' => $row->last_sync_status,
             'last_sync_duration_ms' => $row->last_sync_duration_ms,
             'last_votes_imported' => $row->last_votes_imported,
@@ -120,7 +123,7 @@ class SystemStatusService
             ['id' => 1],
             [
                 'api_version' => (string) config('voteclair.version'),
-                'clair_data_version' => (string) env('CLAIR_DATA_VERSION', 'unknown'),
+                'clair_data_version' => $this->clairDataVersion(),
                 'database_status' => 'unknown',
                 'redis_status' => 'unknown',
                 'queue_status' => 'unknown',
@@ -151,10 +154,7 @@ class SystemStatusService
         }
 
         try {
-            $ping = Redis::connection()->ping();
-            if (! is_string($ping) && ! is_numeric($ping) && ! is_bool($ping)) {
-                $redisStatus = 'error';
-            }
+            Redis::connection()->ping();
         } catch (\Throwable) {
             $redisStatus = 'error';
         }
@@ -197,5 +197,23 @@ class SystemStatusService
         return ($row->database_status === 'ok' && $row->redis_status === 'ok' && $row->queue_status === 'ok')
             ? 'ok'
             : 'degraded';
+    }
+
+    private function clairDataVersion(): string
+    {
+        return (string) config('voteclair.clair_data_version', 'unknown');
+    }
+
+    private function iso8601OrNull(mixed $value): ?string
+    {
+        if ($value instanceof CarbonInterface) {
+            return $value->toIso8601String();
+        }
+
+        if (is_string($value) && trim($value) !== '') {
+            return Carbon::parse($value)->toIso8601String();
+        }
+
+        return null;
     }
 }

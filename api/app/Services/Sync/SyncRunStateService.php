@@ -36,7 +36,7 @@ class SyncRunStateService
         $state = $this->get($runId);
 
         foreach ($metrics as $key => $value) {
-            $state['metrics'][$key] = max(0, (int) ($value ?? 0));
+            $state['metrics'][$key] = max(0, (int) $value);
         }
 
         Cache::put($this->key($runId), $state, self::TTL_SECONDS);
