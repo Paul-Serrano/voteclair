@@ -5,8 +5,8 @@ namespace App\Jobs;
 use App\Services\Clair\ClairApiClient;
 use App\Services\Scrutins\ImportanceScoringService;
 use App\Services\Sync\ScrutinSyncService;
-use App\Services\Sync\SyncStateService;
 use App\Services\Sync\SyncRunStateService;
+use App\Services\Sync\SyncStateService;
 
 class SyncScrutinsJob extends BaseSyncJob
 {
@@ -16,8 +16,7 @@ class SyncScrutinsJob extends BaseSyncJob
         ImportanceScoringService $importanceScoringService,
         ?SyncRunStateService $syncRunStateService = null,
         ?ScrutinSyncService $scrutinSyncService = null,
-    ): void
-    {
+    ): void {
         $scrutinSyncService ??= app(ScrutinSyncService::class);
         $syncRunStateService ??= app(SyncRunStateService::class);
 

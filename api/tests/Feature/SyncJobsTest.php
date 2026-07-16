@@ -2,17 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\CreateSystemEventJob;
+use App\Jobs\ImportScrutinsJob;
+use App\Jobs\ImportVotesJob;
+use App\Jobs\RecalculateStatisticsJob;
 use App\Jobs\SyncDeputiesJob;
 use App\Jobs\SyncGroupsJob;
 use App\Jobs\SyncScrutinsJob;
 use App\Jobs\SyncVotesJob;
 use App\Jobs\UpdateDeputiesJob;
 use App\Jobs\UpdateGroupsJob;
-use App\Jobs\ImportScrutinsJob;
-use App\Jobs\ImportVotesJob;
-use App\Jobs\RecalculateStatisticsJob;
 use App\Jobs\UpdateSystemStatusJob;
-use App\Jobs\CreateSystemEventJob;
 use App\Services\Clair\ClairApiClient;
 use App\Services\Scrutins\ImportanceScoringService;
 use App\Services\Sync\SyncStateService;

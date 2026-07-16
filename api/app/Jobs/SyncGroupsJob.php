@@ -4,8 +4,8 @@ namespace App\Jobs;
 
 use App\Services\Clair\ClairApiClient;
 use App\Services\Sync\GroupSyncService;
-use App\Services\Sync\SyncStateService;
 use App\Services\Sync\SyncRunStateService;
+use App\Services\Sync\SyncStateService;
 
 class SyncGroupsJob extends BaseSyncJob
 {
@@ -14,8 +14,7 @@ class SyncGroupsJob extends BaseSyncJob
         SyncStateService $syncStateService,
         ?SyncRunStateService $syncRunStateService = null,
         ?GroupSyncService $groupSyncService = null,
-    ): void
-    {
+    ): void {
         $groupSyncService ??= app(GroupSyncService::class);
         $syncRunStateService ??= app(SyncRunStateService::class);
 

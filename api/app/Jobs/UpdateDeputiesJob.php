@@ -2,6 +2,4 @@
 
 namespace App\Jobs;
 
-class UpdateDeputiesJob extends SyncDeputiesJob
-{
-}
+class UpdateDeputiesJob extends SyncDeputiesJob {}

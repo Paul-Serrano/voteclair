@@ -2,6 +2,4 @@
 
 namespace App\Jobs;
 
-class ImportScrutinsJob extends SyncScrutinsJob
-{
-}
+class ImportScrutinsJob extends SyncScrutinsJob {}

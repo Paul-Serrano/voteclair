@@ -2,6 +2,4 @@
 
 namespace App\Jobs;
 
-class ImportVotesJob extends SyncVotesJob
-{
-}
+class ImportVotesJob extends SyncVotesJob {}
