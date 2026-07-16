@@ -55,6 +55,7 @@ COPY api/vite.config.js ./vite.config.js
 COPY --from=composer_deps /app/vendor ./vendor
 COPY --from=asset_builder /app/public/build ./public/build
 COPY infra/docker/prod/nginx.conf /etc/nginx/conf.d/default.conf
+COPY infra/docker/prod/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN mkdir -p \
     storage/app/public \
@@ -64,9 +65,10 @@ RUN mkdir -p \
     storage/logs \
     bootstrap/cache \
     && rm -f bootstrap/cache/*.php \
+    && chmod +x /usr/local/bin/entrypoint.sh \
     && chown -R www-data:www-data storage bootstrap/cache \
     && php artisan package:discover --ansi
 
 EXPOSE 80
 
-CMD ["sh", "-c", "php-fpm -D && exec nginx -g 'daemon off;'"]
+CMD ["/usr/local/bin/entrypoint.sh"]
