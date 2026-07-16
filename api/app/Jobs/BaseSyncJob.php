@@ -19,10 +19,11 @@ abstract class BaseSyncJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public function __construct(
-        private readonly ?string $syncRunId = null,
-    )
+    protected ?string $syncRunId = null;
+
+    public function __construct(?string $syncRunId = null)
     {
+        $this->syncRunId = $syncRunId;
         $this->onConnection('redis');
         $this->onQueue((string) env('CLAIR_SYNC_QUEUE', 'default'));
     }

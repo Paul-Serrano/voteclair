@@ -79,12 +79,24 @@ class ImportantVotesTest extends TestCase
     private function resetSchema(): void
     {
         Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('system_events');
         Schema::dropIfExists('scrutins');
         Schema::enableForeignKeyConstraints();
     }
 
     private function createSchema(): void
     {
+        Schema::create('system_events', function (Blueprint $table): void {
+            $table->id();
+            $table->string('type', 100)->index();
+            $table->string('level', 20)->default('info')->index();
+            $table->text('message');
+            $table->json('context')->nullable();
+            $table->unsignedBigInteger('duration_ms')->nullable();
+            $table->timestamp('created_at')->useCurrent();
+            $table->index('created_at');
+        });
+
         Schema::create('scrutins', function (Blueprint $table): void {
             $table->string('id')->primary();
             $table->string('institution_id');
