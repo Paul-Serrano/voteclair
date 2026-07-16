@@ -2,11 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Scrutin;
-use App\Services\Scrutins\ImportanceScoringService;
+use App\Jobs\CreateSystemEventJob;
+use App\Services\Sync\StatisticsService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class RecalculateImportanceCommand extends Command
 {
@@ -14,45 +12,30 @@ class RecalculateImportanceCommand extends Command
 
     protected $description = 'Recalculate importance_score for all scrutins';
 
-    public function handle(ImportanceScoringService $importanceScoringService): int
+    public function handle(StatisticsService $statisticsService): int
     {
         $chunk = max(1, (int) $this->option('chunk'));
-        $processed = 0;
-        $updated = 0;
+        $startedAt = microtime(true);
+        $result = $statisticsService->recalculateImportance($chunk);
 
-        Scrutin::query()
-            ->select([
-                'id',
-                'titre',
-                'demandeur_texte',
-                'nombre_pour',
-                'nombre_contre',
-                'importance_score',
-            ])
-            ->orderBy('id')
-            ->chunk($chunk, function ($scrutins) use ($importanceScoringService, &$processed, &$updated): void {
-                foreach ($scrutins as $scrutin) {
-                    $processed++;
-                    $score = $importanceScoringService->calculate($scrutin);
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
 
-                    if ((int) $scrutin->importance_score === $score) {
-                        continue;
-                    }
+        CreateSystemEventJob::dispatchSync(
+            type: 'stats.recalculated',
+            level: 'info',
+            message: 'Statistics recalculated',
+            context: [
+                'processed' => (int) ($result['processed'] ?? 0),
+                'updated' => (int) ($result['updated'] ?? 0),
+            ],
+            durationMs: $durationMs,
+        );
 
-                    DB::table('scrutins')
-                        ->where('id', $scrutin->id)
-                        ->update([
-                            'importance_score' => $score,
-                            'updated_at' => now(),
-                        ]);
-                    $updated++;
-                }
-            });
-
-        Cache::forget('scrutins:important:5');
-        Cache::forget('scrutins:important:20');
-
-        $this->info(sprintf('Importance recalculated. Processed: %d, Updated: %d', $processed, $updated));
+        $this->info(sprintf(
+            'Importance recalculated. Processed: %d, Updated: %d',
+            (int) ($result['processed'] ?? 0),
+            (int) ($result['updated'] ?? 0),
+        ));
 
         return self::SUCCESS;
     }

@@ -1,37 +1,14 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Services\Sync;
 
 use DateTimeInterface;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-abstract class BaseSyncJob implements ShouldQueue
+abstract class BaseSyncService
 {
-    use Dispatchable;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
-
-    public function __construct(
-        private readonly ?string $syncRunId = null,
-    )
-    {
-        $this->onConnection('redis');
-        $this->onQueue((string) env('CLAIR_SYNC_QUEUE', 'default'));
-    }
-
-    protected function syncRunId(): ?string
-    {
-        return $this->syncRunId;
-    }
-
     protected function chamber(): string
     {
         return (string) env('CLAIR_SYNC_CHAMBER', 'assemblee');
@@ -97,7 +74,6 @@ abstract class BaseSyncJob implements ShouldQueue
             }
         }
 
-        // Keep recent rows when no comparable timestamp exists in payload.
         return ! $hasComparableField;
     }
 
@@ -126,6 +102,10 @@ abstract class BaseSyncJob implements ShouldQueue
      */
     protected function upsertInChunks(string $table, array $rows, array $uniqueBy, array $updateColumns): int
     {
+        if ($rows === []) {
+            return 0;
+        }
+
         $batchSize = max(1, (int) env('CLAIR_SYNC_BATCH_SIZE', 100));
         $written = 0;
 

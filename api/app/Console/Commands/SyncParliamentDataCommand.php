@@ -2,41 +2,45 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\SyncDeputiesJob;
-use App\Jobs\SyncGroupsJob;
-use App\Jobs\SyncScrutinsJob;
-use App\Jobs\SyncVotesJob;
+use App\Services\Sync\SyncManager;
+use App\Services\Sync\SystemStatusService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class SyncParliamentDataCommand extends Command
 {
     protected $signature = 'voteclair:sync';
 
-    protected $description = 'Dispatch the automatic VoteClair parliament synchronization chain';
+    protected $description = 'Orchestrate VoteClair synchronization with Redis locking';
 
-    public function handle(): int
+    public function handle(SyncManager $syncManager, SystemStatusService $systemStatusService): int
     {
-        Log::channel('voteclair')->info('Sync started');
+        $lock = Cache::lock('voteclair:sync:dispatch', 300);
 
-        Bus::chain([
-            new SyncGroupsJob,
-            new SyncDeputiesJob,
-            new SyncScrutinsJob,
-            new SyncVotesJob,
-        ])
-            ->catch(function (Throwable $exception): void {
-                Log::channel('voteclair')->error('Sync failed', [
-                    'exception_class' => $exception::class,
-                    'exception_message' => $exception->getMessage(),
-                ]);
-            })
-            ->dispatch();
+        if (! $lock->get()) {
+            $this->warn('Synchronization is already being started by another process.');
 
-        $this->info('Synchronization chain dispatched.');
+            return self::FAILURE;
+        }
 
-        return self::SUCCESS;
+        try {
+            if ($systemStatusService->isSyncRunning()) {
+                $this->warn('A synchronization is already running.');
+
+                return self::FAILURE;
+            }
+
+            Log::channel('voteclair')->info('Sync started');
+
+            $runId = $syncManager->start();
+
+            $this->info('Synchronization chain dispatched.');
+            $this->line('Run ID: '.$runId);
+
+            return self::SUCCESS;
+        } finally {
+            $lock->release();
+        }
     }
 }

@@ -6,6 +6,13 @@ use App\Jobs\SyncDeputiesJob;
 use App\Jobs\SyncGroupsJob;
 use App\Jobs\SyncScrutinsJob;
 use App\Jobs\SyncVotesJob;
+use App\Jobs\UpdateDeputiesJob;
+use App\Jobs\UpdateGroupsJob;
+use App\Jobs\ImportScrutinsJob;
+use App\Jobs\ImportVotesJob;
+use App\Jobs\RecalculateStatisticsJob;
+use App\Jobs\UpdateSystemStatusJob;
+use App\Jobs\CreateSystemEventJob;
 use App\Services\Clair\ClairApiClient;
 use App\Services\Scrutins\ImportanceScoringService;
 use App\Services\Sync\SyncStateService;
@@ -46,10 +53,13 @@ class SyncJobsTest extends TestCase
             ->assertSuccessful();
 
         Bus::assertChained([
-            SyncGroupsJob::class,
-            SyncDeputiesJob::class,
-            SyncScrutinsJob::class,
-            SyncVotesJob::class,
+            UpdateGroupsJob::class,
+            UpdateDeputiesJob::class,
+            ImportScrutinsJob::class,
+            ImportVotesJob::class,
+            RecalculateStatisticsJob::class,
+            UpdateSystemStatusJob::class,
+            CreateSystemEventJob::class,
         ]);
     }
 
@@ -70,13 +80,13 @@ class SyncJobsTest extends TestCase
         $this->artisan('voteclair:sync')->assertSuccessful();
     }
 
-    public function test_schedule_registers_daily_sync_command(): void
+    public function test_schedule_registers_hourly_sync_command(): void
     {
         Artisan::call('schedule:list');
         $output = Artisan::output();
 
         $this->assertStringContainsString('voteclair:sync', $output);
-        $this->assertStringContainsString('0 3 * * *', $output);
+        $this->assertMatchesRegularExpression('/0\s+\*\s+\*\s+\*\s+\*/', $output);
     }
 
     public function test_sync_status_command_displays_never_when_state_is_missing(): void
@@ -940,7 +950,7 @@ class SyncJobsTest extends TestCase
     {
         Schema::disableForeignKeyConstraints();
 
-        foreach (['votes', 'postal_codes', 'scrutins', 'deputies', 'circonscriptions', 'groups', 'institutions', 'sync_states'] as $table) {
+        foreach (['system_events', 'system_status', 'votes', 'postal_codes', 'scrutins', 'deputies', 'circonscriptions', 'groups', 'institutions', 'sync_states'] as $table) {
             Schema::dropIfExists($table);
         }
 
@@ -1062,6 +1072,37 @@ class SyncJobsTest extends TestCase
             $table->string('key', 100)->unique();
             $table->text('value')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('system_status', function (Blueprint $table) {
+            $table->id();
+            $table->string('api_version', 50)->nullable();
+            $table->string('clair_data_version', 100)->nullable();
+            $table->string('database_status', 20)->default('unknown');
+            $table->string('redis_status', 20)->default('unknown');
+            $table->string('queue_status', 20)->default('unknown');
+            $table->unsignedInteger('queue_pending_jobs')->default(0);
+            $table->unsignedInteger('queue_failed_jobs')->default(0);
+            $table->timestamp('last_successful_sync_at')->nullable();
+            $table->timestamp('last_failed_sync_at')->nullable();
+            $table->string('last_sync_status', 20)->default('idle');
+            $table->unsignedBigInteger('last_sync_duration_ms')->nullable();
+            $table->unsignedInteger('last_scrutins_imported')->default(0);
+            $table->unsignedInteger('last_votes_imported')->default(0);
+            $table->unsignedInteger('last_deputies_updated')->default(0);
+            $table->unsignedInteger('last_groups_updated')->default(0);
+            $table->timestamps();
+        });
+
+        Schema::create('system_events', function (Blueprint $table) {
+            $table->id();
+            $table->string('type', 100)->index();
+            $table->string('level', 20)->default('info')->index();
+            $table->text('message');
+            $table->json('context')->nullable();
+            $table->unsignedBigInteger('duration_ms')->nullable();
+            $table->timestamp('created_at')->useCurrent();
+            $table->index('created_at');
         });
     }
 

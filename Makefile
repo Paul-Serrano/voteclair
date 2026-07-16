@@ -26,9 +26,9 @@ help:
 	@echo "  make migrate         - php artisan migrate"
 	@echo "  make fresh           - php artisan migrate:fresh --seed"
 	@echo "  make test            - php artisan test"
-	@echo "  make queue-worker    - Worker queue Redis (sync)"
+	@echo "  make queue-worker    - Worker queue production (default)"
 	@echo "  make sync            - Lancer voteclair:sync"
-	@echo "  make sync-status     - Voir l'etat incremental"
+	@echo "  make sync-status     - Voir le statut systeme"
 	@echo "  make sync-failed     - Voir les jobs echoues"
 	@echo "  make sync-retry      - Retry jobs echoues"
 	@echo "  make sync-flush      - Vider failed jobs"
@@ -85,13 +85,13 @@ test:
 	$(COMPOSE) exec $(LARAVEL_SERVICE) php artisan test
 
 queue-worker:
-	$(COMPOSE) exec $(LARAVEL_SERVICE) php artisan queue:work redis --queue=sync --tries=3 --timeout=0
+	$(COMPOSE) exec $(LARAVEL_SERVICE) php artisan queue:work --queue=default --tries=3 --sleep=3 --timeout=120
 
 sync:
 	$(COMPOSE) exec $(LARAVEL_SERVICE) php artisan voteclair:sync
 
 sync-status:
-	$(COMPOSE) exec $(LARAVEL_SERVICE) php artisan voteclair:sync-status
+	$(COMPOSE) exec $(LARAVEL_SERVICE) php artisan voteclair:status
 
 sync-failed:
 	$(COMPOSE) exec $(LARAVEL_SERVICE) php artisan queue:failed
