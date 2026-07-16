@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
                     $redis['ok'] = true;
                     $redis['message'] = is_scalar($ping) ? (string) $ping : 'PONG';
-                } catch (\Throwable $exception) {
+                } catch (Throwable $exception) {
                     $redis['message'] = $exception->getMessage();
                 }
 
