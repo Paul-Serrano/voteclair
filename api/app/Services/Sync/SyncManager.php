@@ -9,7 +9,11 @@ use App\Jobs\RecalculateStatisticsJob;
 use App\Jobs\UpdateDeputiesJob;
 use App\Jobs\UpdateGroupsJob;
 use App\Jobs\UpdateSystemStatusJob;
+use Database\Seeders\CirconscriptionsSeeder;
+use Database\Seeders\InstitutionsSeeder;
+use Database\Seeders\PostalCodesSeeder;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -22,6 +26,10 @@ class SyncManager
 
     public function start(): string
     {
+        $this->seedInstitutionsIfNeeded();
+        $this->seedCirconscriptionsIfNeeded();
+        $this->seedPostalCodesIfNeeded();
+
         $runId = (string) Str::uuid();
         $startedAt = now();
 
@@ -84,5 +92,32 @@ class SyncManager
             ->dispatch();
 
         return $runId;
+    }
+
+    private function seedCirconscriptionsIfNeeded(): void
+    {
+        if (DB::table('circonscriptions')->exists()) {
+            return;
+        }
+
+        app(CirconscriptionsSeeder::class)->run();
+    }
+
+    private function seedPostalCodesIfNeeded(): void
+    {
+        if (DB::table('postal_codes')->exists()) {
+            return;
+        }
+
+        app(PostalCodesSeeder::class)->run();
+    }
+
+    private function seedInstitutionsIfNeeded(): void
+    {
+        if (DB::table('institutions')->exists()) {
+            return;
+        }
+
+        app(InstitutionsSeeder::class)->run();
     }
 }

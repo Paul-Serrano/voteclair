@@ -63,6 +63,30 @@ class SyncJobsTest extends TestCase
         ]);
     }
 
+    public function test_sync_command_seeds_circonscriptions_when_table_is_empty(): void
+    {
+        Bus::fake();
+
+        $this->assertDatabaseCount('institutions', 0);
+        $this->assertDatabaseCount('circonscriptions', 0);
+        $this->assertDatabaseCount('postal_codes', 0);
+
+        $this->artisan('voteclair:sync')->assertSuccessful();
+
+        $this->assertGreaterThan(0, DB::table('institutions')->count());
+        $this->assertGreaterThan(0, DB::table('circonscriptions')->count());
+        $this->assertGreaterThan(0, DB::table('postal_codes')->count());
+        $this->assertDatabaseHas('institutions', [
+            'slug' => 'assemblee-nationale',
+        ]);
+        $this->assertDatabaseHas('circonscriptions', [
+            'id' => '878d440d-c6dd-4952-8bd3-2137b745934b',
+        ]);
+        $this->assertDatabaseHas('postal_codes', [
+            'postal_code' => '01000',
+        ]);
+    }
+
     public function test_sync_command_logs_start_message_on_voteclair_channel(): void
     {
         Bus::fake();
@@ -1078,12 +1102,26 @@ class SyncJobsTest extends TestCase
 
         Schema::create('circonscriptions', function (Blueprint $table) {
             $table->string('id')->primary();
+            $table->string('institution_id')->nullable();
             $table->string('departement', 5);
             $table->string('departement_name')->nullable();
             $table->integer('numero');
             $table->string('nom');
             $table->timestamp('last_synced_at')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('postal_codes', function (Blueprint $table): void {
+            $table->bigIncrements('id');
+            $table->string('postal_code', 10);
+            $table->string('departement_code', 5);
+            $table->string('institution_id')->nullable();
+            $table->string('circonscription_id');
+            $table->timestamps();
+
+            $table->index('postal_code');
+            $table->index('departement_code');
+            $table->unique(['postal_code', 'institution_id']);
         });
 
         Schema::create('deputies', function (Blueprint $table) {
