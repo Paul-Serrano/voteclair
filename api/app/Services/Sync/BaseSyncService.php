@@ -110,9 +110,38 @@ abstract class BaseSyncService
         $written = 0;
 
         foreach (array_chunk($rows, $batchSize) as $chunk) {
+            $countBefore = (int) DB::table($table)->count();
+
             DB::transaction(function () use ($table, $chunk, $uniqueBy, $updateColumns): void {
                 DB::table($table)->upsert($chunk, $uniqueBy, $updateColumns);
             });
+
+            $countAfter = (int) DB::table($table)->count();
+
+            if ($countAfter === $countBefore) {
+                $firstRow = $chunk[0];
+                $sampleExists = false;
+
+                if ($firstRow !== []) {
+                    $query = DB::table($table);
+
+                    foreach ($uniqueBy as $column) {
+                        $query->where($column, $firstRow[$column] ?? null);
+                    }
+
+                    $sampleExists = $query->exists();
+                }
+
+                $this->logError('Upsert chunk did not change visible row count', [
+                    'table' => $table,
+                    'chunk_size' => count($chunk),
+                    'count_before' => $countBefore,
+                    'count_after' => $countAfter,
+                    'unique_by' => $uniqueBy,
+                    'sample_exists' => $sampleExists,
+                    'sample_unique_values' => array_intersect_key($firstRow, array_flip($uniqueBy)),
+                ]);
+            }
 
             $written += count($chunk);
         }
