@@ -779,6 +779,23 @@ class SyncJobsTest extends TestCase
     public function test_sync_scrutins_job_incremental_filters_by_date_when_updated_at_is_missing(): void
     {
         $this->seedInstitutions();
+        DB::table('scrutins')->insert([
+            [
+                'id' => 'scr-existing',
+                'institution_id' => '11111111-1111-1111-1111-111111111111',
+                'numero' => 7999,
+                'date' => '2026-06-01 00:00:00',
+                'titre' => 'Existing scrutin',
+                'sort' => 'ADOPTE',
+                'importance_score' => 0,
+                'nombre_votants' => 0,
+                'nombre_pour' => 0,
+                'nombre_contre' => 0,
+                'nombre_abstention' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
 
         $state = app(SyncStateService::class);
         $state->set('last_scrutins_sync', '2026-06-15T00:00:00Z');
@@ -810,7 +827,7 @@ class SyncJobsTest extends TestCase
             app(ImportanceScoringService::class),
         );
 
-        $this->assertDatabaseCount('scrutins', 1);
+        $this->assertDatabaseCount('scrutins', 2);
         $this->assertDatabaseHas('scrutins', [
             'id' => 'scr-new',
             'numero' => 8002,

@@ -22,6 +22,10 @@ class DeputySyncService extends BaseSyncService
         $stateKey = 'last_deputies_sync';
         $stateValue = $this->syncStateService->get($stateKey);
         $since = $this->parseStateDate($stateValue);
+        if ($since !== null && $this->tableIsEmpty('deputies')) {
+            $this->logInfo('Deputies table empty, forcing full sync', ['chamber' => $chamber]);
+            $since = null;
+        }
         $runStartedAt = $this->nowStateValue();
         $startedAt = microtime(true);
 

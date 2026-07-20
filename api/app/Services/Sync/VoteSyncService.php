@@ -22,6 +22,10 @@ class VoteSyncService extends BaseSyncService
         $stateKey = 'last_votes_sync';
         $stateValue = $this->syncStateService->get($stateKey);
         $since = $this->parseStateDate($stateValue);
+        if ($since !== null && $this->tableIsEmpty('votes')) {
+            $this->logInfo('Votes table empty, forcing full sync', ['chamber' => $chamber]);
+            $since = null;
+        }
         $runStartedAt = $this->nowStateValue();
         $startedAt = microtime(true);
 

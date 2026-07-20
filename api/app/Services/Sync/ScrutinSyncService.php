@@ -27,6 +27,10 @@ class ScrutinSyncService extends BaseSyncService
         $stateKey = 'last_scrutins_sync';
         $stateValue = $this->syncStateService->get($stateKey);
         $since = $this->parseStateDate($stateValue);
+        if ($since !== null && $this->tableIsEmpty('scrutins')) {
+            $this->logInfo('Scrutins table empty, forcing full sync', ['chamber' => $chamber]);
+            $since = null;
+        }
         $runStartedAt = $this->nowStateValue();
         $startedAt = microtime(true);
 

@@ -120,6 +120,11 @@ abstract class BaseSyncService
         return $written;
     }
 
+    protected function tableIsEmpty(string $table): bool
+    {
+        return DB::table($table)->limit(1)->doesntExist();
+    }
+
     /**
      * @param  array<string, mixed>  $context
      */

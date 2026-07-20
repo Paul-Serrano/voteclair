@@ -21,6 +21,10 @@ class GroupSyncService extends BaseSyncService
         $stateKey = 'last_groups_sync';
         $stateValue = $this->syncStateService->get($stateKey);
         $since = $this->parseStateDate($stateValue);
+        if ($since !== null && $this->tableIsEmpty('groups')) {
+            $this->logInfo('Groups table empty, forcing full sync', ['chamber' => $chamber]);
+            $since = null;
+        }
         $runStartedAt = $this->nowStateValue();
         $startedAt = microtime(true);
 
