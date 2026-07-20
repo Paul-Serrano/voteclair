@@ -166,11 +166,13 @@ class DeputySyncService extends BaseSyncService
             }
 
             $this->syncStateService->set($stateKey, $runStartedAt);
+            $tableTotal = (int) DB::table('deputies')->count();
 
             $this->logInfo('Sync deputies completed', [
                 'chamber' => $chamber,
                 'processed' => $processed,
                 'skipped' => $skipped,
+                'table_total' => $tableTotal,
                 'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
             ]);
 

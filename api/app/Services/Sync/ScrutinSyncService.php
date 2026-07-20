@@ -120,11 +120,13 @@ class ScrutinSyncService extends BaseSyncService
             $this->syncStateService->set($stateKey, $runStartedAt);
             Cache::forget('scrutins:important:5');
             Cache::forget('scrutins:important:20');
+            $tableTotal = (int) DB::table('scrutins')->count();
 
             $this->logInfo(sprintf('Scrutins imported: %d', $processed), ['chamber' => $chamber]);
             $this->logInfo('Sync scrutins completed', [
                 'chamber' => $chamber,
                 'processed' => $processed,
+                'table_total' => $tableTotal,
                 'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
             ]);
 

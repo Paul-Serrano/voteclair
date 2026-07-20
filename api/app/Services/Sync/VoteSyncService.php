@@ -127,6 +127,7 @@ class VoteSyncService extends BaseSyncService
                 'processed' => $processed,
                 'unknown_deputies' => $unknownDeputies,
                 'unknown_scrutins' => $unknownScrutins,
+                'table_total' => (int) DB::table('votes')->count(),
                 'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
             ]);
             $this->syncStateService->set($stateKey, $runStartedAt);

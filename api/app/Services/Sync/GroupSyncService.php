@@ -117,10 +117,12 @@ class GroupSyncService extends BaseSyncService
             }
 
             $this->syncStateService->set($stateKey, $runStartedAt);
+            $tableTotal = (int) DB::table('groups')->count();
 
             $this->logInfo('Sync groups completed', [
                 'chamber' => $chamber,
                 'processed' => $processed,
+                'table_total' => $tableTotal,
                 'duration_ms' => (int) round((microtime(true) - $startedAt) * 1000),
             ]);
 
