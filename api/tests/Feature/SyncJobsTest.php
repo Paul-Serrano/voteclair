@@ -686,6 +686,37 @@ class SyncJobsTest extends TestCase
 
     public function test_sync_groups_job_incremental_filters_by_updated_at(): void
     {
+        $this->seedInstitutions();
+        DB::table('groups')->insert([
+            [
+                'id' => 'g-existing',
+                'institution_id' => '11111111-1111-1111-1111-111111111111',
+                'source_id' => 'PO-EXISTING',
+                'slug' => 'existing-group',
+                'nom' => 'Existing Group',
+                'nom_complet' => 'Existing Group',
+                'couleur' => '#000000',
+                'logo_url' => null,
+                'position' => 'CENTRE',
+                'ordre' => 0,
+                'actif' => true,
+                'stats_membres_actifs' => null,
+                'stats_presence_moyenne' => null,
+                'stats_presence_solennel_moyenne' => null,
+                'stats_loyaute_moyenne' => null,
+                'stats_cohesion' => null,
+                'stats_participation' => null,
+                'stats_votes_pour' => null,
+                'stats_votes_contre' => null,
+                'stats_votes_abstention' => null,
+                'stats_votes_absent' => null,
+                'stats_calculated_at' => null,
+                'last_synced_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
         $state = app(SyncStateService::class);
         $state->set('last_groups_sync', '2026-06-15T00:00:00Z');
 
@@ -722,7 +753,7 @@ class SyncJobsTest extends TestCase
 
         (new SyncGroupsJob)->handle(app(ClairApiClient::class), $state);
 
-        $this->assertDatabaseCount('groups', 1);
+        $this->assertDatabaseCount('groups', 2);
         $this->assertDatabaseHas('groups', [
             'id' => 'g-new',
             'slug' => 'new-group',
@@ -736,6 +767,38 @@ class SyncJobsTest extends TestCase
     {
         $this->seedInstitutions();
         $this->seedGroup();
+        DB::table('deputies')->insert([
+            [
+                'id' => 'dep-existing',
+                'institution_id' => '11111111-1111-1111-1111-111111111111',
+                'groupe_id' => 'g-1',
+                'circonscription_id' => null,
+                'source_id' => '800000',
+                'slug' => 'deputy-existing',
+                'nom' => 'Existing',
+                'prenom' => 'Deputy',
+                'profession' => null,
+                'email' => null,
+                'twitter' => null,
+                'photo_url' => null,
+                'actif' => true,
+                'stats_presence' => null,
+                'stats_presence_solennel' => null,
+                'stats_loyaute' => null,
+                'stats_participation' => null,
+                'stats_interventions' => null,
+                'stats_amendements' => null,
+                'stats_amendements_adoptes' => null,
+                'stats_questions' => null,
+                'resume_ia' => null,
+                'parcours_ia' => null,
+                'positions_cles_ia' => null,
+                'faits_notables_ia' => null,
+                'last_synced_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
 
         $state = app(SyncStateService::class);
         $state->set('last_deputies_sync', '2026-06-15T00:00:00Z');
@@ -765,7 +828,7 @@ class SyncJobsTest extends TestCase
 
         (new SyncDeputiesJob)->handle(app(ClairApiClient::class), $state);
 
-        $this->assertDatabaseCount('deputies', 1);
+        $this->assertDatabaseCount('deputies', 2);
         $this->assertDatabaseHas('deputies', [
             'id' => 'dep-new',
             'slug' => 'deputy-new',
